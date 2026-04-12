@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SignalSlate
 
-## Getting Started
+AI-powered exit ticket tool for K–12 teachers. Turn student responses into teaching insight immediately.
 
-First, run the development server:
+## Setup
+
+### 1. Configure environment variables
+
+Copy `.env.local` and fill in your values:
+
+```
+DATABASE_URL="postgresql://user:password@localhost:5432/signalslate"
+NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+NEXTAUTH_URL="http://localhost:3000"
+OPENAI_API_KEY="sk-..."
+```
+
+**Need a database?** Options:
+- Local PostgreSQL: `createdb signalslate`
+- Free cloud: [Neon](https://neon.tech) — grab the connection string and append `?sslmode=require`
+
+### 2. Run migrations
+
+```bash
+npm run db:migrate
+# Generates the Prisma client automatically
+```
+
+### 3. Load demo data (optional but recommended for first run)
+
+```bash
+npm run db:seed
+# Creates: demo@signalslate.com / demo1234
+# Creates: 2 exit tickets, 20 submissions, 2 pre-built analyses
+```
+
+### 4. Start the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Demo flow
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Log in as `demo@signalslate.com` / `demo1234`
+2. Browse the pre-seeded exit tickets and their analyses
+3. Open Trends to see recurring misconception themes
 
-## Learn More
+Or create your own account and build from scratch:
+1. Register → Create an exit ticket (2–4 questions)
+2. Copy the student link → open in incognito → submit as 3+ students
+3. Return to the ticket → Run Analysis
+4. View class summary, misconceptions, students to check in with
+5. Visit Trends after running analyses on multiple tickets
 
-To learn more about Next.js, take a look at the following resources:
+## Tech stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Framework**: Next.js 16 (App Router, full-stack)
+- **Database**: PostgreSQL via Prisma 7 + `@prisma/adapter-pg`
+- **Auth**: next-auth v5 (credentials)
+- **UI**: Tailwind CSS + shadcn/ui
+- **AI**: OpenAI `gpt-4o-mini` with structured outputs
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+```bash
+npm run dev          # Start dev server
+npm run build        # Production build
+npm run db:migrate   # Run Prisma migrations + generate client
+npm run db:push      # Push schema without migration history (rapid prototyping)
+npm run db:seed      # Load demo data
+npm run db:generate  # Regenerate Prisma client only
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deployment (Vercel + Neon)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Push to GitHub
+2. Import repo in Vercel
+3. Set env vars: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (your Vercel URL), `OPENAI_API_KEY`
+4. After first deploy: run `npx prisma migrate deploy` against your Neon DB
+5. Optionally run seed: `npm run db:seed` pointed at production DB
