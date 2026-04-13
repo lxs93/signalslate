@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -6,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AnalysisPanel } from "@/components/analysis-panel";
 import { TicketActions } from "@/components/ticket-actions";
+import { PeriodSelector } from "@/components/period-selector";
 import type { Question, QuestionOption, Submission } from "@/generated/prisma/client";
 
 export default async function TicketDetailPage({
@@ -19,6 +21,7 @@ export default async function TicketDetailPage({
   const ticket = await db.exitTicket.findUnique({
     where: { id },
     include: {
+      periods: true,
       questions: {
         orderBy: { orderIndex: "asc" },
         include: { options: { orderBy: { orderIndex: "asc" } } },
@@ -42,6 +45,11 @@ export default async function TicketDetailPage({
     notFound();
   }
 
+  const periods = await db.classPeriod.findMany({
+    where: { userId: session!.user!.id! },
+    orderBy: { createdAt: "asc" },
+  });
+
   const latestAnalysis = ticket.analyses[0] ?? null;
   const latestSubmission = ticket.submissions[0] ?? null;
   const hasNewSubmissions =
@@ -62,6 +70,8 @@ export default async function TicketDetailPage({
           <h1 className="text-2xl font-bold text-slate-900 truncate">{ticket.title}</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {ticket.subject} · {ticket.lessonTopic}
+            {ticket.standard && <> · <span className="font-mono text-xs">{ticket.standard}</span></>}
+            {ticket.periods.length > 0 && <> · {ticket.periods.map((p) => p.name).join(", ")}</>}
           </p>
         </div>
         <Badge variant={ticket.isOpen ? "default" : "secondary"} className="shrink-0 mt-1">
@@ -69,13 +79,22 @@ export default async function TicketDetailPage({
         </Badge>
       </div>
 
-      <p className="text-xs text-slate-500 mb-6">
-        Created {new Date(ticket.createdAt).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })}
-      </p>
+      <div className="flex items-center justify-between mb-6">
+        <p className="text-xs text-slate-500">
+          Created {new Date(ticket.createdAt).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </p>
+        {periods.length > 0 && (
+          <PeriodSelector
+            ticketId={ticket.id}
+            currentPeriodIds={ticket.periods.map((p) => p.id)}
+            periods={periods}
+          />
+        )}
+      </div>
 
       <TicketActions
         ticketId={ticket.id}
@@ -135,12 +154,13 @@ export default async function TicketDetailPage({
         ) : (
           <div className="space-y-1.5">
             {ticket.submissions.map((sub: Submission) => (
-              <div
+              <Link
                 key={sub.id}
-                className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 flex items-center justify-between"
+                href={`/tickets/${ticket.id}/submissions/${sub.id}`}
+                className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 flex items-center justify-between hover:border-slate-300 hover:bg-slate-50 transition-colors group"
               >
                 <span className="text-sm font-medium text-slate-900">{sub.studentName}</span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-500 flex items-center gap-2">
                   {new Date(sub.submittedAt).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "2-digit",
@@ -149,8 +169,9 @@ export default async function TicketDetailPage({
                     month: "short",
                     day: "numeric",
                   })}
+                  <span className="text-slate-300 group-hover:text-slate-500 transition-colors">→</span>
                 </span>
-              </div>
+              </Link>
             ))}
           </div>
         )}

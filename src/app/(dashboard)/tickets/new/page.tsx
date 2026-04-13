@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuestionBuilder, type QuestionDraft } from "@/components/question-builder";
+
+type Period = { id: string; name: string };
 
 type Step = "details" | "questions";
 
@@ -16,14 +18,24 @@ export default function NewTicketPage() {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [lessonTopic, setLessonTopic] = useState("");
+  const [standard, setStandard] = useState("");
+  const [selectedPeriodIds, setSelectedPeriodIds] = useState<string[]>([]);
+  const [periods, setPeriods] = useState<Period[]>([]);
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    fetch("/api/periods")
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setPeriods(data); })
+      .catch(() => {});
+  }, []);
+
   function handleDetailsSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || !subject.trim() || !lessonTopic.trim()) {
-      setError("All fields are required");
+      setError("Required fields are missing");
       return;
     }
     setError("");
@@ -61,7 +73,7 @@ export default function NewTicketPage() {
       const res = await fetch("/api/tickets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, subject, lessonTopic, questions }),
+        body: JSON.stringify({ title, subject, lessonTopic, standard, periodIds: selectedPeriodIds, questions }),
       });
 
       if (!res.ok) {
@@ -136,6 +148,41 @@ export default function NewTicketPage() {
                   placeholder="e.g. Adding unlike denominators"
                 />
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="standard">
+                  Standard <span className="text-slate-400 font-normal">(optional)</span>
+                </Label>
+                <Input
+                  id="standard"
+                  value={standard}
+                  onChange={(e) => setStandard(e.target.value)}
+                  placeholder="e.g. CCSS.MATH.CONTENT.5.NF.A.1"
+                />
+              </div>
+              {periods.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label>
+                    Class periods <span className="text-slate-400 font-normal">(optional)</span>
+                  </Label>
+                  <div className="space-y-1.5">
+                    {periods.map((p) => (
+                      <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedPeriodIds.includes(p.id)}
+                          onChange={(e) =>
+                            setSelectedPeriodIds((prev) =>
+                              e.target.checked ? [...prev, p.id] : prev.filter((id) => id !== p.id)
+                            )
+                          }
+                          className="rounded"
+                        />
+                        {p.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               <Button type="submit" className="w-full mt-2">
                 Continue to questions
               </Button>
@@ -150,6 +197,8 @@ export default function NewTicketPage() {
             <CardContent className="px-4 py-3">
               <p className="text-xs text-slate-500">
                 <strong className="text-slate-700">{title}</strong> · {subject} · {lessonTopic}
+                {standard && <> · <span className="font-mono">{standard}</span></>}
+                {selectedPeriodIds.length > 0 && <> · {periods.filter(p => selectedPeriodIds.includes(p.id)).map(p => p.name).join(", ")}</>}
               </p>
             </CardContent>
           </Card>

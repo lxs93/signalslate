@@ -28,13 +28,21 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { title, subject, lessonTopic, questions } = body;
+    const { title, subject, lessonTopic, standard, periodIds, questions } = body;
 
     if (!title || !subject || !lessonTopic) {
       return NextResponse.json(
         { error: "title, subject, and lessonTopic are required" },
         { status: 400 }
       );
+    }
+
+    // Verify all periods belong to this teacher
+    if (Array.isArray(periodIds) && periodIds.length > 0) {
+      const periods = await db.classPeriod.findMany({ where: { id: { in: periodIds } } });
+      if (periods.some((p) => p.userId !== session.user.id)) {
+        return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
+      }
     }
     if (!questions || questions.length < 2 || questions.length > 4) {
       return NextResponse.json(
@@ -45,7 +53,16 @@ export async function POST(req: NextRequest) {
 
     const ticket = await db.$transaction(async (tx: Prisma.TransactionClient) => {
       const created = await tx.exitTicket.create({
-        data: { userId: session.user!.id!, title, subject, lessonTopic },
+        data: {
+          userId: session.user!.id!,
+          title,
+          subject,
+          lessonTopic,
+          standard: standard || null,
+          periods: Array.isArray(periodIds) && periodIds.length > 0
+            ? { connect: periodIds.map((pid: string) => ({ id: pid })) }
+            : undefined,
+        },
       });
 
       for (const q of questions) {

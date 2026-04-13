@@ -36,6 +36,40 @@ async function getTicketForUser(ticketId: string, userId: string) {
   return ticket;
 }
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const ticket = await db.exitTicket.findUnique({ where: { id } });
+  if (!ticket || ticket.userId !== session.user.id) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const body = await req.json();
+
+  if ("periodIds" in body) {
+    const periodIds: string[] = body.periodIds ?? [];
+    if (periodIds.length > 0) {
+      const periods = await db.classPeriod.findMany({ where: { id: { in: periodIds } } });
+      if (periods.some((p) => p.userId !== session.user.id)) {
+        return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
+      }
+    }
+    await db.exitTicket.update({
+      where: { id },
+      data: { periods: { set: periodIds.map((pid) => ({ id: pid })) } },
+    });
+  }
+
+  return new NextResponse(null, { status: 204 });
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
