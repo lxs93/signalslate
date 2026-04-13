@@ -113,16 +113,17 @@ export function TicketActions({
               {analyzing ? "Re-analyzing…" : "Re-run analysis (new responses since last run)"}
             </Button>
           ) : (
-            <p className="text-xs text-slate-500">
-              Analysis is up to date.{" "}
-              <button
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-slate-500">Analysis is up to date.</p>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleAnalyze}
                 disabled={analyzing}
-                className="underline hover:no-underline"
               >
                 {analyzing ? "Running…" : "Run again"}
-              </button>
-            </p>
+              </Button>
+            </div>
           )}
         </div>
       )}

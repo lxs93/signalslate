@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AnalysisPanel } from "@/components/analysis-panel";
@@ -74,9 +73,10 @@ export default async function TicketDetailPage({
             {ticket.periods.length > 0 && <> · {ticket.periods.map((p) => p.name).join(", ")}</>}
           </p>
         </div>
-        <Badge variant={ticket.isOpen ? "default" : "secondary"} className="shrink-0 mt-1">
+        <span className="flex items-center gap-1.5 shrink-0 mt-1 text-sm text-slate-500">
+          <span className={`w-1.5 h-1.5 rounded-full ${ticket.isOpen ? "bg-emerald-500" : "bg-slate-300"}`} />
           {ticket.isOpen ? "Open" : "Closed"}
-        </Badge>
+        </span>
       </div>
 
       <div className="flex items-center justify-between mb-6">

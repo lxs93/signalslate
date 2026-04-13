@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import type { ClassPeriod } from "@/generated/prisma/client";
 
 type ThemeRow = { themeName: string; themeType: string; _count: { themeName: number } };
 type FlagRow = {
@@ -11,20 +13,35 @@ type FlagRow = {
   analysis: { exitTicket: { id: string; title: string } };
 };
 
-export default async function TrendsPage() {
+export default async function TrendsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string }>;
+}) {
   const session = await auth();
   const userId = session!.user!.id!;
+  const { period: selectedPeriodId } = await searchParams;
+
+  const periods = await db.classPeriod.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const ticketFilter = {
+    userId,
+    ...(selectedPeriodId ? { periods: { some: { id: selectedPeriodId } } } : {}),
+  };
 
   const [themes, flags] = await Promise.all([
     db.analysisTheme.groupBy({
       by: ["themeName", "themeType"],
       _count: { themeName: true },
-      where: { analysis: { exitTicket: { userId } } },
+      where: { analysis: { exitTicket: ticketFilter } },
       orderBy: { _count: { themeName: "desc" } },
       take: 20,
     }),
     db.followUpFlag.findMany({
-      where: { analysis: { exitTicket: { userId } } },
+      where: { analysis: { exitTicket: ticketFilter } },
       include: {
         analysis: {
           include: {
@@ -57,21 +74,53 @@ export default async function TrendsPage() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
+  const selectedPeriod = periods.find((p: ClassPeriod) => p.id === selectedPeriodId);
+
   return (
     <div className="max-w-3xl">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-900">Trends</h1>
         <p className="text-sm text-slate-500 mt-1">
           Recurring misconceptions and follow-up patterns across your exit tickets
         </p>
       </div>
 
+      {periods.length > 0 && (
+        <div className="flex items-center gap-1.5 mb-8 flex-wrap">
+          <Link
+            href="/trends"
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+              !selectedPeriodId
+                ? "bg-slate-600 text-white"
+                : "text-slate-600 hover:bg-slate-100"
+            }`}
+          >
+            All
+          </Link>
+          {periods.map((period: ClassPeriod) => (
+            <Link
+              key={period.id}
+              href={`/trends?period=${period.id}`}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                selectedPeriodId === period.id
+                  ? "bg-slate-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              {period.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
       {themes.length === 0 && flags.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <p className="text-sm text-slate-600 font-medium">No trends yet</p>
             <p className="text-xs text-slate-500 mt-1">
-              Run analysis on at least one exit ticket to start seeing patterns here.
+              {selectedPeriod
+                ? `No analyzed tickets in ${selectedPeriod.name} yet.`
+                : "Run analysis on at least one exit ticket to start seeing patterns here."}
             </p>
           </CardContent>
         </Card>

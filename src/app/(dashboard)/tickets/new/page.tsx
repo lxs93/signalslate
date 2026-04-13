@@ -94,12 +94,14 @@ export default function NewTicketPage() {
   return (
     <div className="max-w-2xl">
       <div className="mb-8">
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => (step === "questions" ? setStep("details") : router.push("/dashboard"))}
-          className="text-sm text-slate-500 hover:text-slate-900 transition-colors mb-4 block"
+          className="mb-4 -ml-2"
         >
           ← Back
-        </button>
+        </Button>
         <h1 className="text-2xl font-bold text-slate-900">New exit ticket</h1>
         <div className="flex items-center gap-2 mt-3">
           <div className={`h-1.5 w-16 rounded-full ${step === "details" ? "bg-slate-900" : "bg-emerald-500"}`} />
@@ -162,7 +164,7 @@ export default function NewTicketPage() {
               {periods.length > 0 && (
                 <div className="space-y-1.5">
                   <Label>
-                    Class periods <span className="text-slate-400 font-normal">(optional)</span>
+                    Section <span className="text-slate-400 font-normal">(optional)</span>
                   </Label>
                   <div className="space-y-1.5">
                     {periods.map((p) => (

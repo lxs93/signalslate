@@ -69,7 +69,7 @@ export default async function DashboardPage() {
           {hasPeriods && (
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                Periods
+                Sections
               </p>
               <div className="space-y-2.5">
                 {periods.map((period: PeriodWithCounts) => {

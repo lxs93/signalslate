@@ -95,12 +95,9 @@ export default function LoginPage() {
               Create one
             </Link>
           </p>
-          <button
-            onClick={fillDemo}
-            className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
-          >
+          <Button variant="ghost" size="sm" onClick={fillDemo}>
             Try the demo account
-          </button>
+          </Button>
         </div>
       </div>
     </div>

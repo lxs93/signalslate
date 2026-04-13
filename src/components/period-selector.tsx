@@ -45,7 +45,7 @@ export function PeriodSelector({ ticketId, currentPeriodIds, periods }: PeriodSe
         disabled={saving}
         className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-50"
       >
-        <span className="text-slate-400">Period:</span>
+        <span className="text-slate-400">Section:</span>
         <span className="text-slate-700">{label}</span>
         <span className="text-slate-300">▾</span>
       </button>

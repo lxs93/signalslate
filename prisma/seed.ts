@@ -18,6 +18,7 @@ async function main() {
   const existing = await db.user.findUnique({ where: { email: DEMO_EMAIL } });
   if (existing) {
     await db.exitTicket.deleteMany({ where: { userId: existing.id } });
+    await db.classPeriod.deleteMany({ where: { userId: existing.id } });
     await db.user.delete({ where: { id: existing.id } });
   }
 

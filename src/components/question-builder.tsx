@@ -170,7 +170,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                     onClick={() => updateQuestion(qIndex, { questionType: type })}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                       q.questionType === type
-                        ? "bg-slate-900 text-white border-slate-900"
+                        ? "bg-slate-600 text-white border-slate-600"
                         : "bg-white text-slate-600 border-slate-300 hover:border-slate-400"
                     }`}
                   >

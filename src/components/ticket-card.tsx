@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { ExitTicket } from "@/generated/prisma/client";
 
 export type TicketWithCount = ExitTicket & {
@@ -21,12 +20,10 @@ export function TicketCard({ ticket }: { ticket: TicketWithCount }) {
                 {ticket.subject} · {ticket.lessonTopic}
               </p>
             </div>
-            <Badge
-              variant={ticket.isOpen ? "default" : "secondary"}
-              className="shrink-0 text-xs"
-            >
+            <span className="flex items-center gap-1.5 shrink-0 text-xs text-slate-500">
+              <span className={`w-1.5 h-1.5 rounded-full ${ticket.isOpen ? "bg-emerald-500" : "bg-slate-300"}`} />
               {ticket.isOpen ? "Open" : "Closed"}
-            </Badge>
+            </span>
           </div>
         </CardHeader>
         <CardContent className="pb-4">
