@@ -15,9 +15,8 @@ NEXTAUTH_URL="http://localhost:3000"
 OPENAI_API_KEY="sk-..."
 ```
 
-**Need a database?** Options:
+**Database?**
 - Local PostgreSQL: `createdb signalslate`
-- Free cloud: [Neon](https://neon.tech) — grab the connection string and append `?sslmode=require`
 
 ### 2. Run migrations
 
