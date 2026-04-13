@@ -15,7 +15,7 @@ NEXTAUTH_URL="http://localhost:3000"
 OPENAI_API_KEY="sk-..."
 ```
 
-**Database?**
+**Database**
 - Local PostgreSQL: `createdb signalslate`
 
 ### 2. Run migrations
