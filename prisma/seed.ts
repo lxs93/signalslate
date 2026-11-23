@@ -10,6 +10,22 @@ const db = new PrismaClient({ adapter });
 
 const DEMO_EMAIL = "demo@signalslate.com";
 const DEMO_PASSWORD = "demo1234";
+const DEMO_JOIN_CODE = "DEMO42";
+
+const ROSTER = [
+  ["Jordan", "Lee", "4821"],
+  ["Maria", "Gonzalez", "3390"],
+  ["Darius", "Brown", "7712"],
+  ["Priya", "Patel", "1111"],
+  ["Alex", "Kim", "5068"],
+  ["Sofia", "Rossi", "2245"],
+  ["Marcus", "Johnson", "9130"],
+  ["Emma", "Nguyen", "6604"],
+  ["Ethan", "Walker", "8457"],
+  ["Aisha", "Rahman", "3029"],
+  ["Noah", "Garcia", "1976"],
+  ["Lily", "Chen", "5583"],
+] as const;
 
 async function main() {
   console.log("Seeding database...");
@@ -31,10 +47,32 @@ async function main() {
     },
   });
 
+  // ─── Class period + roster ────────────────────────────────────────────────
+  const period = await db.classPeriod.create({
+    data: { userId: user.id, name: "Period 2", joinCode: DEMO_JOIN_CODE },
+  });
+
+  const studentIds: Record<string, string> = {};
+  for (const [firstName, lastName, pin] of ROSTER) {
+    const student = await db.student.create({
+      data: {
+        teacherId: user.id,
+        firstName,
+        lastName,
+        pin,
+        enrollments: { create: { periodId: period.id } },
+      },
+    });
+    studentIds[firstName] = student.id;
+  }
+  const fullName = (first: string) =>
+    `${first} ${ROSTER.find(([f]) => f === first)![1]}`;
+
   // ─── Ticket 1: ELA ────────────────────────────────────────────────────────
   const ticket1 = await db.exitTicket.create({
     data: {
       userId: user.id,
+      periods: { connect: { id: period.id } },
       title: "Main Idea Check",
       subject: "ELA",
       lessonTopic: "Identifying main idea vs. supporting details",
@@ -86,7 +124,8 @@ async function main() {
     const sub = await db.submission.create({
       data: {
         exitTicketId: ticket1.id,
-        studentName: student.name,
+        studentId: studentIds[student.name],
+        studentName: fullName(student.name),
         submittedAt: new Date(Date.now() - Math.random() * 3600000),
       },
     });
@@ -139,10 +178,10 @@ async function main() {
 
   await db.followUpFlag.createMany({
     data: [
-      { analysisId: analysis1.id, studentName: "Maria", reason: "Submitted a blank short-answer response." },
-      { analysisId: analysis1.id, studentName: "Alex", reason: "Explicitly stated confusion between main idea and details." },
-      { analysisId: analysis1.id, studentName: "Emma", reason: "Short-answer describes the character detail rather than the main idea." },
-      { analysisId: analysis1.id, studentName: "Noah", reason: "Describes only the beginning of the story rather than the overall main idea." },
+      { analysisId: analysis1.id, studentId: studentIds["Maria"], studentName: fullName("Maria"), reason: "Submitted a blank short-answer response." },
+      { analysisId: analysis1.id, studentId: studentIds["Alex"], studentName: fullName("Alex"), reason: "Explicitly stated confusion between main idea and details." },
+      { analysisId: analysis1.id, studentId: studentIds["Emma"], studentName: fullName("Emma"), reason: "Short-answer describes the character detail rather than the main idea." },
+      { analysisId: analysis1.id, studentId: studentIds["Noah"], studentName: fullName("Noah"), reason: "Describes only the beginning of the story rather than the overall main idea." },
     ],
   });
 
@@ -150,6 +189,7 @@ async function main() {
   const ticket2 = await db.exitTicket.create({
     data: {
       userId: user.id,
+      periods: { connect: { id: period.id } },
       title: "Adding Unlike Fractions",
       subject: "Math",
       lessonTopic: "Adding fractions with unlike denominators",
@@ -206,7 +246,8 @@ async function main() {
     const sub = await db.submission.create({
       data: {
         exitTicketId: ticket2.id,
-        studentName: student.name,
+        studentId: studentIds[student.name],
+        studentName: fullName(student.name),
         submittedAt: new Date(Date.now() - Math.random() * 1800000),
       },
     });
@@ -247,9 +288,9 @@ async function main() {
 
   await db.followUpFlag.createMany({
     data: [
-      { analysisId: analysis2.id, studentName: "Maria", reason: "Described adding numerators and denominators directly without finding a common denominator." },
-      { analysisId: analysis2.id, studentName: "Alex", reason: "Submitted a blank short-answer response and selected the incorrect option." },
-      { analysisId: analysis2.id, studentName: "Marcus", reason: "Selected an incorrect answer and noted uncertainty about executing the LCD steps." },
+      { analysisId: analysis2.id, studentId: studentIds["Maria"], studentName: fullName("Maria"), reason: "Described adding numerators and denominators directly without finding a common denominator." },
+      { analysisId: analysis2.id, studentId: studentIds["Alex"], studentName: fullName("Alex"), reason: "Submitted a blank short-answer response and selected the incorrect option." },
+      { analysisId: analysis2.id, studentId: studentIds["Marcus"], studentName: fullName("Marcus"), reason: "Selected an incorrect answer and noted uncertainty about executing the LCD steps." },
     ],
   });
 
@@ -260,7 +301,12 @@ Demo account:
   Email:    ${DEMO_EMAIL}
   Password: ${DEMO_PASSWORD}
 
+Student sign-in (/student/login):
+  Class code: ${DEMO_JOIN_CODE}
+  Student:    Priya Patel, PIN 1111 (has an open ticket to answer)
+
 Created:
+  - 1 class period (Period 2) with ${ROSTER.length} students
   - 2 exit tickets (Main Idea Check, Adding Unlike Fractions)
   - 20 student submissions
   - 2 pre-built analyses with themes and follow-up flags

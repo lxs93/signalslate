@@ -18,6 +18,7 @@ model User {
   exitTickets    ExitTicket[]
   classPeriods   ClassPeriod[]
   trendsSummaries TrendsSummary[]
+  students       Student[]
   sessions       Session[]
   accounts       Account[]
 
@@ -88,9 +89,12 @@ model ClassPeriod {
   id          String       @id @default(cuid())
   userId      String       @map("user_id")
   name        String
+  // Short code students type to find their class on the sign-in page
+  joinCode    String       @unique @map("join_code")
   createdAt   DateTime     @default(now()) @map("created_at")
   user        User         @relation(fields: [userId], references: [id])
   exitTickets ExitTicket[]
+  enrollments Enrollment[]
 
   @@map("class_periods")
 }
@@ -107,6 +111,38 @@ model TrendsSummary {
 
   @@unique([userId, periodId])
   @@map("trends_summaries")
+}
+
+// ─── Students ────────────────────────────────────────────────────────────────
+
+model Student {
+  id          String         @id @default(uuid()) @db.Uuid
+  teacherId   String         @map("teacher_id")
+  firstName   String         @map("first_name")
+  lastName    String         @map("last_name")
+  // Stored in plain text for the MVP so teachers can print sign-in sheets.
+  pin         String
+  // Reserved for Google sign-in later
+  googleSub   String?        @unique @map("google_sub")
+  email       String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  teacher     User           @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+  submissions Submission[]
+  flags       FollowUpFlag[]
+
+  @@map("students")
+}
+
+model Enrollment {
+  studentId String      @map("student_id") @db.Uuid
+  periodId  String      @map("period_id")
+  createdAt DateTime    @default(now()) @map("created_at")
+  student   Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  period    ClassPeriod @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, periodId])
+  @@map("enrollments")
 }
 
 // ─── Questions ───────────────────────────────────────────────────────────────
@@ -146,10 +182,16 @@ model QuestionOption {
 model Submission {
   id           String     @id @default(cuid())
   exitTicketId String     @map("exit_ticket_id")
+  // Null for submissions made before student accounts existed
+  studentId    String?    @map("student_id") @db.Uuid
+  // Snapshot of the name at submit time
   studentName  String     @map("student_name")
   submittedAt  DateTime   @default(now()) @map("submitted_at")
   exitTicket   ExitTicket @relation(fields: [exitTicketId], references: [id], onDelete: Cascade)
+  student      Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   responses    Response[]
+
+  @@unique([exitTicketId, studentId])
 
   @@map("submissions")
 }
@@ -205,10 +247,12 @@ model AnalysisTheme {
 model FollowUpFlag {
   id          String   @id @default(cuid())
   analysisId  String   @map("analysis_id")
+  studentId   String?  @map("student_id") @db.Uuid
   studentName String   @map("student_name")
   reason      String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
   analysis    Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  student     Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
 
   @@map("follow_up_flags")
 }
