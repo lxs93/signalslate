@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function ThankYouPage() {
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
@@ -9,6 +11,12 @@ export default function ThankYouPage() {
         <p className="text-sm text-slate-500 mt-2">
           Thanks! Your teacher will review your response.
         </p>
+        <Link
+          href="/student"
+          className="inline-block mt-6 text-sm font-medium text-slate-900 hover:underline"
+        >
+          Back to your exit tickets
+        </Link>
       </div>
     </div>
   );

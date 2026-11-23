@@ -149,7 +149,7 @@ export default async function TicketDetailPage({
         </h2>
         {ticket.submissions.length === 0 ? (
           <p className="text-sm text-slate-500">
-            No responses yet. Share the student link to collect responses.
+            No responses yet. Students answer from their SignalSlate home page, or you can share the student link.
           </p>
         ) : (
           <div className="space-y-1.5">

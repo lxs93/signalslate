@@ -35,7 +35,6 @@ export const createTicketSchema = z.object({
 });
 
 export const studentSubmissionSchema = z.object({
-  studentName: z.string().min(1, "Name is required"),
   responses: z.array(
     z.object({
       questionId: z.string(),
