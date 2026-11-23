@@ -32,7 +32,7 @@ body {
 }
 
 /* Sign-in screens: content sits above center. The empty space is split
-   30% above / 70% below, and both gaps shrink to zero when content is tall. */
+   35% above / 65% below, and both gaps shrink to zero when content is tall. */
 @layer components {
   .auth-screen {
     min-height: 100dvh;
@@ -42,10 +42,10 @@ body {
   }
   .auth-screen::before {
     content: "";
-    flex: 3;
+    flex: 35;
   }
   .auth-screen::after {
     content: "";
-    flex: 7;
+    flex: 65;
   }
 }
