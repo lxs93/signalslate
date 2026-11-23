@@ -95,6 +95,12 @@ export default function LoginPage() {
               Create one
             </Link>
           </p>
+          <p className="text-sm text-slate-500">
+            Student?{" "}
+            <Link href="/student/login" className="text-slate-900 font-medium hover:underline">
+              Sign in here
+            </Link>
+          </p>
           <Button variant="ghost" size="sm" onClick={fillDemo}>
             Try the demo account
           </Button>
