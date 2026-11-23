@@ -30,8 +30,8 @@ npm run db:migrate
 ```bash
 npm run db:seed
 # Creates: demo@signalslate.com / demo1234
-# Creates: Period 2 (class code DEMO42) with 12 students
-# Creates: 2 exit tickets, 20 submissions, 2 pre-built analyses
+# Creates: Periods 2, 3, 5 (class codes DEMO42, DEMO43, DEMO45), 32 students
+# Creates: 11 exit tickets (ELA, Math, Science), 109 submissions, 10 pre-built analyses
 ```
 
 ### 4. Start the dev server
@@ -46,7 +46,7 @@ Open [http://localhost:3000](http://localhost:3000)
 
 **As the teacher**
 1. Log in at `/login` as `demo@signalslate.com` / `demo1234`
-2. Open **Period 2** to see the class code, the class list with PINs, and the printable sign-in sheet
+2. Open a period (e.g. **Period 2**) to see the class code, the class list with PINs, and the printable sign-in sheet
 3. Open an exit ticket to see responses, who hasn't submitted, and the analysis
 4. Open **Students** to see each student's answers and follow-up flags
 5. Open **Trends** to see recurring misconception themes
