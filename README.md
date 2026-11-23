@@ -30,6 +30,7 @@ npm run db:migrate
 ```bash
 npm run db:seed
 # Creates: demo@signalslate.com / demo1234
+# Creates: Period 2 (class code DEMO42) with 12 students
 # Creates: 2 exit tickets, 20 submissions, 2 pre-built analyses
 ```
 
@@ -43,16 +44,33 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Demo flow
 
-1. Log in as `demo@signalslate.com` / `demo1234`
-2. Browse the pre-seeded exit tickets and their analyses
-3. Open Trends to see recurring misconception themes
+**As the teacher**
+1. Log in at `/login` as `demo@signalslate.com` / `demo1234`
+2. Open **Period 2** to see the class code, the class list with PINs, and the printable sign-in sheet
+3. Open an exit ticket to see responses, who hasn't submitted, and the analysis
+4. Open **Students** to see each student's answers and follow-up flags
+5. Open **Trends** to see recurring misconception themes
 
-Or create your own account and build from scratch:
-1. Register → Create an exit ticket (2–4 questions)
-2. Copy the student link → open in incognito → submit as 3+ students
-3. Return to the ticket → Run Analysis
-4. View class summary, misconceptions, students to check in with
-5. Visit Trends after running analyses on multiple tickets
+**As a student** (use a private window so both sessions stay signed in)
+1. Go to `/student/login`, enter class code `DEMO42`
+2. Pick **Priya P.** and enter PIN `1111`
+3. Answer the open "Adding Unlike Fractions" ticket, then view your submitted answers
+
+**From scratch**
+1. Register → create a section → add students by pasting names (one per line)
+2. Create an exit ticket (2–4 questions) and assign it to the section
+3. Students sign in at `/student/login` with the class code, their name, and their PIN, and answer from their home page (or follow the student link you copy from the ticket)
+4. Return to the ticket → Run Analysis (needs 3+ submissions)
+5. View class summary, misconceptions, and students to check in with
+
+## Student accounts
+
+- Teachers create students from a section page; each student gets a UUID and a random 4-digit PIN
+- A student can be in several of a teacher's sections; each section has its own class code
+- Students only see tickets assigned to their sections and can submit each one once
+- PINs are stored in plain text so teachers can print sign-in sheets (MVP only; see the privacy note below)
+
+> **Privacy note:** this is an MVP. Student data handling (FERPA/COPPA, PIN hashing, rate limiting sign-in attempts, keeping names out of AI prompts) still needs to be addressed before real classroom use.
 
 ## Tech stack
 
