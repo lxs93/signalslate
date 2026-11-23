@@ -42,7 +42,10 @@ export async function POST(
     return NextResponse.json({ error: "Invalid answer choice" }, { status: 400 });
   }
 
-  const student = await db.student.findUniqueOrThrow({ where: { id: studentId } });
+  const student = await db.student.findUnique({ where: { id: studentId } });
+  if (!student) {
+    return NextResponse.json({ error: "Please sign in again" }, { status: 401 });
+  }
   const studentName = `${student.firstName} ${student.lastName}`.trim();
 
   try {

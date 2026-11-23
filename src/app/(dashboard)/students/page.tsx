@@ -70,36 +70,47 @@ export default async function StudentsPage({
         </Card>
       ) : (
         <div className="border border-slate-200 rounded-lg bg-white divide-y divide-slate-100">
-          <div className="grid grid-cols-[1fr_1fr_90px_90px_110px] gap-3 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+          <div className="hidden md:grid grid-cols-[1fr_1fr_90px_90px_110px] gap-3 px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">
             <span>Name</span>
             <span>Sections</span>
             <span className="text-right">Answered</span>
             <span className="text-right">Flags</span>
             <span className="text-right">Last answer</span>
           </div>
-          {students.map((s) => (
-            <Link
-              key={s.id}
-              href={`/students/${s.id}`}
-              className="grid grid-cols-[1fr_1fr_90px_90px_110px] gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
-            >
-              <span className="font-medium text-slate-900">
-                {s.lastName ? `${s.lastName}, ${s.firstName}` : s.firstName}
-              </span>
-              <span className="text-slate-500 truncate">
-                {s.enrollments.map((e) => e.period.name).join(", ") || "—"}
-              </span>
-              <span className="text-right text-slate-700">{s.submissions.length}</span>
-              <span className={`text-right ${s._count.flags > 0 ? "text-amber-600 font-medium" : "text-slate-400"}`}>
-                {s._count.flags}
-              </span>
-              <span className="text-right text-slate-500">
-                {s.submissions[0]
-                  ? s.submissions[0].submittedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })
-                  : "—"}
-              </span>
-            </Link>
-          ))}
+          {students.map((s) => {
+            const sections = s.enrollments.map((e) => e.period.name).join(", ") || "—";
+            const last = s.submissions[0]
+              ? s.submissions[0].submittedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+              : "—";
+            return (
+              <Link
+                key={s.id}
+                href={`/students/${s.id}`}
+                className="block md:grid md:grid-cols-[1fr_1fr_90px_90px_110px] md:gap-3 px-4 py-2.5 text-sm hover:bg-slate-50 transition-colors"
+              >
+                <span className="block font-medium text-slate-900">
+                  {s.lastName ? `${s.lastName}, ${s.firstName}` : s.firstName}
+                </span>
+                {/* Phones: one summary line */}
+                <span className="block md:hidden text-xs text-slate-500 mt-0.5">
+                  {sections} · {s.submissions.length} answered
+                  {s._count.flags > 0 && (
+                    <span className="text-amber-600 font-medium">
+                      {" "}· {s._count.flags} flag{s._count.flags !== 1 ? "s" : ""}
+                    </span>
+                  )}
+                </span>
+                <span className="hidden md:block text-slate-500 truncate">{sections}</span>
+                <span className="hidden md:block text-right text-slate-700">{s.submissions.length}</span>
+                <span
+                  className={`hidden md:block text-right ${s._count.flags > 0 ? "text-amber-600 font-medium" : "text-slate-400"}`}
+                >
+                  {s._count.flags}
+                </span>
+                <span className="hidden md:block text-right text-slate-500">{last}</span>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

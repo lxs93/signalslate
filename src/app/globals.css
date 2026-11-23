@@ -25,10 +25,18 @@
   --radius: 0.5rem;
 }
 
-body {
-  background: var(--color-background);
-  color: var(--color-foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  /* Tailwind v4 defaults borders to currentColor; use the theme's light gray */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+  }
 }
 
 /* Sign-in screens: content sits above center. The empty space is split

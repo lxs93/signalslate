@@ -239,7 +239,7 @@ export default async function TicketDetailPage({
           <CardContent className="py-8 text-center">
             <p className="text-sm text-slate-600 font-medium">Ready to analyze</p>
             <p className="text-xs text-slate-500 mt-1">
-              {ticket._count.submissions} responses collected. Click &quot;Run analysis&quot; above.
+              {ticket._count.submissions}{" "}responses collected. Click &quot;Run analysis&quot; above.
             </p>
           </CardContent>
         </Card>

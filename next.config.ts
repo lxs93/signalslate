@@ -10,6 +10,8 @@ const lanAddresses = Object.values(networkInterfaces())
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: lanAddresses,
+  // A stray lockfile higher up (~/Desktop) makes Next guess the wrong root
+  turbopack: { root: process.cwd() },
 };
 
 export default nextConfig;

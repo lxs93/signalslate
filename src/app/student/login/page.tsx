@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getCurrentStudent } from "@/lib/session";
 import { StudentLoginForm } from "@/components/student-login-form";
 
 function safeNext(next: string | string[] | undefined): string {
@@ -16,8 +16,8 @@ export default async function StudentLoginPage({
   const { next, code } = await searchParams;
   const nextPath = safeNext(next);
 
-  const session = await auth();
-  if (session?.user?.role === "student") {
+  // Only skip the form for a student who still exists
+  if (await getCurrentStudent()) {
     redirect(nextPath);
   }
 

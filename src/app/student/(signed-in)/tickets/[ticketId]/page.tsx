@@ -40,7 +40,12 @@ export default async function StudentAnswersPage({
         <h1 className="text-xl font-bold text-slate-900">{ticket.title}</h1>
         <p className="text-sm text-slate-500 mt-0.5">
           {ticket.subject} · {ticket.lessonTopic} · Submitted{" "}
-          {submission.submittedAt.toLocaleString()}
+          {submission.submittedAt.toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+          })}
         </p>
       </div>
 

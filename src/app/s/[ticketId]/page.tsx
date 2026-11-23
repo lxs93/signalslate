@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
+import { getCurrentStudent } from "@/lib/session";
 import { getTicketForStudent } from "@/lib/student-tickets";
 import { StudentHeader } from "@/components/student-header";
 import { ExitTicketForm } from "@/components/exit-ticket-form";
@@ -25,13 +25,12 @@ export default async function StudentTicketPage({
   params: Promise<{ ticketId: string }>;
 }) {
   const { ticketId } = await params;
-  const session = await auth();
-  const studentId = session?.user?.role === "student" ? session.user.studentId : undefined;
-  if (!studentId) {
+  const student = await getCurrentStudent();
+  if (!student) {
     redirect(`/student/login?next=${encodeURIComponent(`/s/${ticketId}`)}`);
   }
 
-  const ticket = await getTicketForStudent(ticketId, studentId);
+  const ticket = await getTicketForStudent(ticketId, student.id);
   if (ticket && ticket.submissions.length > 0) {
     redirect(`/student/tickets/${ticketId}`);
   }
@@ -57,7 +56,7 @@ export default async function StudentTicketPage({
 
   return (
     <div className="min-h-screen bg-white">
-      <StudentHeader name={session!.user!.name ?? "Student"} />
+      <StudentHeader name={`${student.firstName} ${student.lastName}`.trim()} />
       {content}
     </div>
   );

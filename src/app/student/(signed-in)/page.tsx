@@ -70,7 +70,7 @@ export default async function StudentHomePage() {
                       <p className="text-sm font-medium text-slate-900">{t.title}</p>
                       <p className="text-xs text-slate-500 mt-0.5">
                         {t.subject} · Submitted{" "}
-                        {t.submissions[0].submittedAt.toLocaleDateString()}
+                        {t.submissions[0].submittedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </p>
                     </div>
                     <span className="text-xs text-slate-500">View answers →</span>

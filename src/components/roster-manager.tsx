@@ -80,7 +80,7 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
           Students ({students.length})
         </p>
@@ -150,9 +150,9 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
       ) : (
         <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 bg-white">
           {students.map((s) => (
-            <div key={s.id} className="flex items-center gap-3 px-4 py-2">
+            <div key={s.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2">
               {editingId === s.id ? (
-                <form onSubmit={handleRename} className="flex items-center gap-2 flex-1">
+                <form onSubmit={handleRename} className="flex flex-wrap items-center gap-2 flex-1">
                   <Input
                     autoFocus
                     value={editFirst}
@@ -177,13 +177,15 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
                 <>
                   <Link
                     href={`/students/${s.id}`}
-                    className="text-sm text-slate-800 flex-1 hover:underline"
+                    className="text-sm text-slate-800 flex-1 min-w-0 truncate hover:underline"
                   >
                     {s.firstName} {s.lastName}
                   </Link>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-500 shrink-0">
                     PIN <span className="font-mono text-slate-800">{s.pin}</span>
                   </span>
+                  {/* On phones the actions wrap onto their own line */}
+                  <div className="flex w-full sm:w-auto -ml-2 sm:ml-0">
                   <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" onClick={() => startEdit(s)}>
                     Edit
                   </Button>
@@ -205,6 +207,7 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
                   >
                     Remove
                   </Button>
+                  </div>
                 </>
               )}
             </div>
