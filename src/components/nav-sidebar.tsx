@@ -41,7 +41,11 @@ export function NavSidebar() {
       <div className="px-3 pb-4">
         <Separator className="mb-4" />
         <button
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={async () => {
+            // Redirect in the browser so it works from any host (localhost or LAN IP)
+            await signOut({ redirect: false });
+            window.location.href = "/login";
+          }}
           className="w-full text-left px-3 py-2 rounded-md text-sm text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors"
         >
           Sign out

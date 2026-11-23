@@ -13,7 +13,11 @@ export function StudentHeader({ name }: { name: string }) {
         <div className="flex items-center gap-4">
           <span className="text-sm text-slate-600">{name}</span>
           <button
-            onClick={() => signOut({ callbackUrl: "/student/login" })}
+            onClick={async () => {
+            // Redirect in the browser so it works from any host (localhost or LAN IP)
+            await signOut({ redirect: false });
+            window.location.href = "/student/login";
+          }}
             className="text-sm text-slate-500 hover:text-slate-900 transition-colors"
           >
             Sign out
