@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -84,7 +85,15 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
                     {flag.studentName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-slate-900">{flag.studentName}</p>
+                    <p className="text-sm font-medium text-slate-900">
+                      {flag.studentId ? (
+                        <Link href={`/students/${flag.studentId}`} className="hover:underline">
+                          {flag.studentName}
+                        </Link>
+                      ) : (
+                        flag.studentName
+                      )}
+                    </p>
                     <p className="text-xs text-slate-600 mt-0.5">{flag.reason}</p>
                   </div>
                 </div>

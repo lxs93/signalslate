@@ -56,5 +56,5 @@ export interface AnalysisWithDetails {
   followupQuestion: string;
   createdAt: Date;
   themes: Array<{ themeName: string; themeType: string }>;
-  followUpFlags: Array<{ studentName: string; reason: string }>;
+  followUpFlags: Array<{ studentId: string | null; studentName: string; reason: string }>;
 }

@@ -8,6 +8,7 @@ import type { ClassPeriod } from "@/generated/prisma/client";
 
 type ThemeRow = { themeName: string; themeType: string; _count: { themeName: number } };
 type FlagRow = {
+  studentId: string | null;
   studentName: string;
   reason: string;
   analysis: { exitTicket: { id: string; title: string } };
@@ -53,24 +54,25 @@ export default async function TrendsPage({
     }),
   ]);
 
-  // Group flags by student name
-  const flagsByStudent = (flags as FlagRow[]).reduce(
-    (acc: Record<string, Array<{ reason: string; ticketTitle: string; ticketId: string }>>, flag: FlagRow) => {
-      const name = flag.studentName;
-      if (!acc[name]) acc[name] = [];
-      acc[name].push({
-        reason: flag.reason,
-        ticketTitle: flag.analysis.exitTicket.title,
-        ticketId: flag.analysis.exitTicket.id,
-      });
-      return acc;
-    },
-    {} as Record<string, Array<{ reason: string; ticketTitle: string; ticketId: string }>>
-  );
-
-  type FlagEntry = { studentName: string; count: number; flags: Array<{ reason: string; ticketTitle: string; ticketId: string }> };
-  const sortedStudents: FlagEntry[] = Object.entries(flagsByStudent)
-    .map(([studentName, flagList]) => ({ studentName, count: flagList.length, flags: flagList }))
+  // Group flags by student account, falling back to the name for flags
+  // that couldn't be linked to an account
+  type FlagInstance = { reason: string; ticketTitle: string; ticketId: string };
+  type FlagEntry = { studentId: string | null; studentName: string; count: number; flags: FlagInstance[] };
+  const byStudent = new Map<string, FlagEntry>();
+  for (const flag of flags as FlagRow[]) {
+    const key = flag.studentId ?? `name:${flag.studentName}`;
+    const entry =
+      byStudent.get(key) ??
+      { studentId: flag.studentId, studentName: flag.studentName, count: 0, flags: [] };
+    entry.count += 1;
+    entry.flags.push({
+      reason: flag.reason,
+      ticketTitle: flag.analysis.exitTicket.title,
+      ticketId: flag.analysis.exitTicket.id,
+    });
+    byStudent.set(key, entry);
+  }
+  const sortedStudents: FlagEntry[] = [...byStudent.values()]
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
@@ -166,10 +168,18 @@ export default async function TrendsPage({
             ) : (
               <div className="space-y-3">
                 {sortedStudents.map((entry) => (
-                  <Card key={entry.studentName} className="border-slate-200">
+                  <Card key={entry.studentId ?? entry.studentName} className="border-slate-200">
                     <CardHeader className="pb-2 pt-4 px-4">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm font-semibold">{entry.studentName}</CardTitle>
+                        <CardTitle className="text-sm font-semibold">
+                          {entry.studentId ? (
+                            <a href={`/students/${entry.studentId}`} className="hover:underline">
+                              {entry.studentName}
+                            </a>
+                          ) : (
+                            entry.studentName
+                          )}
+                        </CardTitle>
                         <Badge variant={entry.count > 2 ? "default" : "secondary"} className="text-xs">
                           {entry.count} ticket{entry.count !== 1 ? "s" : ""}
                         </Badge>

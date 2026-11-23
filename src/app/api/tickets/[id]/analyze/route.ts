@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { analyzeExitTicket } from "@/lib/openai";
 import { Prisma } from "@/generated/prisma/client";
+import { matchStudentId } from "@/lib/match-student";
 
 export async function GET(
   _req: NextRequest,
@@ -101,6 +102,7 @@ export async function POST(
         await tx.followUpFlag.createMany({
           data: result.students_to_check_in_with.map((s) => ({
             analysisId: created.id,
+            studentId: matchStudentId(s.student_name, ticket.submissions),
             studentName: s.student_name,
             reason: s.reason,
           })),
