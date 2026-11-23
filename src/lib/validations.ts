@@ -49,3 +49,36 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateTicketInput = z.infer<typeof createTicketSchema>;
 export type StudentSubmissionInput = z.infer<typeof studentSubmissionSchema>;
+
+export const addStudentsSchema = z.union([
+  z.object({ names: z.string().min(1, "Enter at least one name") }),
+  z.object({ studentId: z.string().uuid() }),
+]);
+
+export const updateStudentSchema = z.union([
+  z.object({
+    firstName: z.string().trim().min(1, "First name is required"),
+    lastName: z.string().trim(),
+  }),
+  z.object({ resetPin: z.literal(true) }),
+]);
+
+/**
+ * One student per line. Accepts "First Last" or "Last, First".
+ * A single word is taken as a first name.
+ */
+export function parseStudentNames(text: string): { firstName: string; lastName: string }[] {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim().replace(/\s+/g, " "))
+    .filter(Boolean)
+    .map((line) => {
+      if (line.includes(",")) {
+        const [last, ...rest] = line.split(",");
+        return { firstName: rest.join(",").trim(), lastName: last.trim() };
+      }
+      const [first, ...rest] = line.split(" ");
+      return { firstName: first, lastName: rest.join(" ") };
+    })
+    .filter((n) => n.firstName);
+}

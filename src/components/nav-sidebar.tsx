@@ -14,7 +14,7 @@ export function NavSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-56 bg-white border-r border-slate-200 flex flex-col">
+    <aside className="print:hidden fixed top-0 left-0 h-screen w-56 bg-white border-r border-slate-200 flex flex-col">
       <div className="px-5 py-5">
         <span className="text-base font-bold text-slate-900 tracking-tight">SignalSlate</span>
       </div>

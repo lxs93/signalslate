@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TicketCard, type TicketWithCount } from "@/components/ticket-card";
+import { RosterManager } from "@/components/roster-manager";
 
 export default async function PeriodPage({
   params,
@@ -22,6 +23,7 @@ export default async function PeriodPage({
         orderBy: { createdAt: "desc" },
         include: { _count: { select: { submissions: true, analyses: true } } },
       },
+      enrollments: { include: { student: true } },
     },
   });
 
@@ -30,6 +32,20 @@ export default async function PeriodPage({
   }
 
   const tickets = period.exitTickets as TicketWithCount[];
+
+  const byName = (a: { lastName: string; firstName: string }, b: { lastName: string; firstName: string }) =>
+    a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName);
+  const students = period.enrollments.map((e) => e.student).sort(byName);
+  const otherStudents = await db.student.findMany({
+    where: { teacherId: userId, enrollments: { none: { periodId: id } } },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+  const pick = (s: (typeof students)[number]) => ({
+    id: s.id,
+    firstName: s.firstName,
+    lastName: s.lastName,
+    pin: s.pin,
+  });
 
   return (
     <div className="max-w-3xl">
@@ -43,7 +59,10 @@ export default async function PeriodPage({
         <div>
           <h1 className="text-2xl font-bold text-slate-900">{period.name}</h1>
           <p className="text-sm text-slate-500 mt-1">
-            {tickets.length} ticket{tickets.length !== 1 ? "s" : ""}
+            {tickets.length} ticket{tickets.length !== 1 ? "s" : ""} · Class code{" "}
+            <span className="font-mono font-semibold text-slate-900 tracking-wider">
+              {period.joinCode}
+            </span>
           </p>
         </div>
         <Button asChild>
@@ -51,6 +70,17 @@ export default async function PeriodPage({
         </Button>
       </div>
 
+      <div className="mb-8">
+        <RosterManager
+          periodId={period.id}
+          students={students.map(pick)}
+          otherStudents={otherStudents.map(pick)}
+        />
+      </div>
+
+      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+        Exit Tickets
+      </p>
       {tickets.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
