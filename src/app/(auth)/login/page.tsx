@@ -43,7 +43,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-dvh flex items-center justify-center px-4">
+    <div className="auth-screen px-4">
       <div className="w-full max-w-sm space-y-4">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-slate-900">SignalSlate</h1>
