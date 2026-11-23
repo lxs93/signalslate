@@ -49,6 +49,20 @@ export default async function TicketDetailPage({
     orderBy: { createdAt: "asc" },
   });
 
+  // Enrolled students in this ticket's sections who haven't answered yet
+  const submittedStudentIds = ticket.submissions
+    .map((s: Submission) => s.studentId)
+    .filter((x: string | null): x is string => !!x);
+  const notSubmitted = await db.student.findMany({
+    where: {
+      teacherId: session!.user!.id!,
+      enrollments: { some: { periodId: { in: ticket.periods.map((p: { id: string }) => p.id) } } },
+      id: { notIn: submittedStudentIds },
+    },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    select: { id: true, firstName: true, lastName: true },
+  });
+
   const latestAnalysis = ticket.analyses[0] ?? null;
   const latestSubmission = ticket.submissions[0] ?? null;
   const hasNewSubmissions =
@@ -159,7 +173,12 @@ export default async function TicketDetailPage({
                 href={`/tickets/${ticket.id}/submissions/${sub.id}`}
                 className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 flex items-center justify-between hover:border-slate-300 hover:bg-slate-50 transition-colors group"
               >
-                <span className="text-sm font-medium text-slate-900">{sub.studentName}</span>
+                <span className="text-sm font-medium text-slate-900">
+                  {sub.studentName}
+                  {!sub.studentId && (
+                    <span className="ml-2 text-xs font-normal text-slate-400">no account</span>
+                  )}
+                </span>
                 <span className="text-xs text-slate-500 flex items-center gap-2">
                   {new Date(sub.submittedAt).toLocaleTimeString("en-US", {
                     hour: "numeric",
@@ -173,6 +192,24 @@ export default async function TicketDetailPage({
                 </span>
               </Link>
             ))}
+          </div>
+        )}
+        {notSubmitted.length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+              Not submitted ({notSubmitted.length})
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {notSubmitted.map((s) => (
+                <Link
+                  key={s.id}
+                  href={`/students/${s.id}`}
+                  className="text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md px-2.5 py-1 transition-colors"
+                >
+                  {s.firstName} {s.lastName}
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </section>

@@ -53,7 +53,15 @@ export default async function SubmissionDetailPage({
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">{submission.studentName}</h1>
+        <h1 className="text-2xl font-bold text-slate-900">
+          {submission.studentId ? (
+            <Link href={`/students/${submission.studentId}`} className="hover:underline">
+              {submission.studentName}
+            </Link>
+          ) : (
+            submission.studentName
+          )}
+        </h1>
         <p className="text-sm text-slate-500 mt-0.5">
           Submitted{" "}
           {new Date(submission.submittedAt).toLocaleDateString("en-US", {
