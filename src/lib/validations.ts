@@ -102,15 +102,23 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateTicketInput = z.infer<typeof createTicketSchema>;
 export type StudentSubmissionInput = z.infer<typeof studentSubmissionSchema>;
 
+export const MAX_NAMES_PER_PASTE = 100;
+export const MAX_NAME_LENGTH = 50;
+
 export const addStudentsSchema = z.union([
-  z.object({ names: z.string().min(1, "Enter at least one name") }),
+  // Room for 100 names with some slack; the per-name limits are checked after parsing
+  z.object({ names: z.string().min(1, "Enter at least one name").max(10_000, "That's too much text to add at once") }),
   z.object({ studentId: z.string().uuid() }),
 ]);
 
 export const updateStudentSchema = z.union([
   z.object({
-    firstName: z.string().trim().min(1, "First name is required"),
-    lastName: z.string().trim(),
+    firstName: z
+      .string()
+      .trim()
+      .min(1, "First name is required")
+      .max(MAX_NAME_LENGTH, `Names can be up to ${MAX_NAME_LENGTH} characters`),
+    lastName: z.string().trim().max(MAX_NAME_LENGTH, `Names can be up to ${MAX_NAME_LENGTH} characters`),
   }),
   z.object({ resetPin: z.literal(true) }),
 ]);
@@ -133,4 +141,13 @@ export function parseStudentNames(text: string): { firstName: string; lastName: 
       return { firstName: first, lastName: rest.join(" ") };
     })
     .filter((n) => n.firstName);
+}
+
+/** Why a pasted class list can't be added as is, or null when it's fine. */
+export function checkStudentNames(names: { firstName: string; lastName: string }[]): string | null {
+  if (names.length === 0) return "Enter at least one name";
+  if (names.length > MAX_NAMES_PER_PASTE) return `Add up to ${MAX_NAMES_PER_PASTE} students at a time`;
+  const long = names.find((n) => n.firstName.length > MAX_NAME_LENGTH || n.lastName.length > MAX_NAME_LENGTH);
+  if (long) return `“${`${long.firstName} ${long.lastName}`.trim().slice(0, 30)}…” is too long. Names can be up to ${MAX_NAME_LENGTH} characters`;
+  return null;
 }

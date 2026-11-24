@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTicketSchema, parseStudentNames, sectionSchema, submissionFeedbackSchema, updateTicketSchema } from "./validations";
+import { checkStudentNames, createTicketSchema, parseStudentNames, sectionSchema, submissionFeedbackSchema, updateTicketSchema } from "./validations";
 
 describe("parseStudentNames", () => {
   it("reads First Last, Last, First, and single names", () => {
@@ -86,5 +86,23 @@ describe("sectionSchema", () => {
   it("caps names at 60 characters", () => {
     expect(sectionSchema.safeParse({ name: "x".repeat(60) }).success).toBe(true);
     expect(sectionSchema.safeParse({ name: "x".repeat(61) }).success).toBe(false);
+  });
+});
+
+describe("checkStudentNames", () => {
+  const n = (firstName: string, lastName = "") => ({ firstName, lastName });
+
+  it("accepts a normal class list", () => {
+    expect(checkStudentNames([n("Priya", "Patel"), n("Mo")])).toBeNull();
+  });
+
+  it("needs at least one name and at most 100", () => {
+    expect(checkStudentNames([])).toBe("Enter at least one name");
+    expect(checkStudentNames(Array.from({ length: 101 }, (_, i) => n(`Kid${i}`)))).toBe("Add up to 100 students at a time");
+    expect(checkStudentNames(Array.from({ length: 100 }, (_, i) => n(`Kid${i}`)))).toBeNull();
+  });
+
+  it("names the student whose name is too long", () => {
+    expect(checkStudentNames([n("Ana", "x".repeat(51))])).toMatch(/^“Ana x+…” is too long/);
   });
 });

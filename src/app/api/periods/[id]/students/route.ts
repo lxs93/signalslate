@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getTeacherId } from "@/lib/session";
 import { generatePin } from "@/lib/codes";
-import { addStudentsSchema, parseStudentNames } from "@/lib/validations";
+import { addStudentsSchema, checkStudentNames, parseStudentNames } from "@/lib/validations";
 import { readJson } from "@/lib/request";
 
 /** Add new students (pasted names) or enroll an existing student in this period. */
@@ -40,8 +40,9 @@ export async function POST(
   }
 
   const names = parseStudentNames(parsed.data.names);
-  if (names.length === 0) {
-    return NextResponse.json({ error: "Enter at least one name" }, { status: 400 });
+  const problem = checkStudentNames(names);
+  if (problem) {
+    return NextResponse.json({ error: problem }, { status: 400 });
   }
 
   await db.$transaction(
