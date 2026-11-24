@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import type { ClassPeriod } from "@/generated/prisma/client";
+import { MAX_SECTION_NAME } from "@/lib/validations";
 
 interface PeriodManagerProps {
   periods: ClassPeriod[];
@@ -97,6 +98,7 @@ export function PeriodManager({ periods }: PeriodManagerProps) {
                     <Input
                       autoFocus
                       aria-label={`New name for ${p.name}`}
+                      maxLength={MAX_SECTION_NAME}
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
                       className="h-7 text-sm"
@@ -146,6 +148,7 @@ export function PeriodManager({ periods }: PeriodManagerProps) {
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Period 1 or Math"
               aria-label="New section name"
+              maxLength={MAX_SECTION_NAME}
               className="h-8 text-sm"
             />
             <Button type="submit" size="sm" disabled={loading || !newName.trim()}>

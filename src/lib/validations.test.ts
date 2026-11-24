@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTicketSchema, parseStudentNames, submissionFeedbackSchema, updateTicketSchema } from "./validations";
+import { createTicketSchema, parseStudentNames, sectionSchema, submissionFeedbackSchema, updateTicketSchema } from "./validations";
 
 describe("parseStudentNames", () => {
   it("reads First Last, Last, First, and single names", () => {
@@ -72,5 +72,19 @@ describe("submissionFeedbackSchema", () => {
 
   it("caps notes at 1000 characters", () => {
     expect(submissionFeedbackSchema.safeParse({ feedback: "x".repeat(1001) }).success).toBe(false);
+  });
+});
+
+describe("sectionSchema", () => {
+  it("trims names and requires text", () => {
+    expect(sectionSchema.parse({ name: "  Period 2 " })).toEqual({ name: "Period 2" });
+    expect(sectionSchema.safeParse({ name: "   " }).success).toBe(false);
+    expect(sectionSchema.safeParse({ name: 123 }).success).toBe(false);
+    expect(sectionSchema.safeParse(null).success).toBe(false);
+  });
+
+  it("caps names at 60 characters", () => {
+    expect(sectionSchema.safeParse({ name: "x".repeat(60) }).success).toBe(true);
+    expect(sectionSchema.safeParse({ name: "x".repeat(61) }).success).toBe(false);
   });
 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { readJson } from "@/lib/request";
+import { sectionSchema } from "@/lib/validations";
 
 export async function PATCH(
   req: Request,
@@ -18,13 +19,12 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = (await readJson(req)) as { name?: unknown } | null;
-  const name = typeof body?.name === "string" ? body.name : "";
-  if (!name.trim()) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  const parsed = sectionSchema.safeParse(await readJson(req));
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
-  const updated = await db.classPeriod.update({ where: { id }, data: { name: name.trim() } });
+  const updated = await db.classPeriod.update({ where: { id }, data: { name: parsed.data.name } });
   return NextResponse.json(updated);
 }
 

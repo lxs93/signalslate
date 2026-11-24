@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateJoinCode } from "@/lib/codes";
 import { readJson } from "@/lib/request";
+import { sectionSchema } from "@/lib/validations";
 
 export async function GET() {
   const session = await auth();
@@ -24,11 +25,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await readJson(req)) as { name?: unknown } | null;
-  const name = typeof body?.name === "string" ? body.name.trim() : "";
-  if (!name) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  const parsed = sectionSchema.safeParse(await readJson(req));
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
+  const { name } = parsed.data;
 
   // Retry on the rare join code collision
   for (let attempt = 0; attempt < 5; attempt++) {

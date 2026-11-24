@@ -28,6 +28,17 @@ export const questionSchema = z
     message: "Multiple choice questions need at least 2 options",
   });
 
+export const MAX_SECTION_NAME = 60;
+
+/** A section's name, e.g. "Period 2" or "Math 7B" */
+export const sectionSchema = z.object({
+  name: z
+    .string("Name is required")
+    .trim()
+    .min(1, "Name is required")
+    .max(MAX_SECTION_NAME, `Section names can be up to ${MAX_SECTION_NAME} characters`),
+});
+
 export const MAX_TICKET_STANDARDS = 6;
 
 export const standardTagSchema = z.object({
