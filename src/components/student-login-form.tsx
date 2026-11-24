@@ -16,6 +16,15 @@ interface ClassInfo {
   students: { id: string; displayName: string }[];
 }
 
+async function fetchClass(code: string): Promise<ClassInfo | null> {
+  try {
+    const res = await fetch(`/api/public/classes/${encodeURIComponent(code.trim())}`);
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
+
 export function StudentLoginForm({
   nextPath,
   initialCode,
@@ -29,23 +38,27 @@ export function StudentLoginForm({
   const [student, setStudent] = useState<{ id: string; displayName: string } | null>(null);
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  // A code in the URL is looked up on mount, so start out loading
+  const [loading, setLoading] = useState(!!initialCode);
 
-  const lookUp = useCallback(async (value: string) => {
-    setError("");
-    setLoading(true);
-    const res = await fetch(`/api/public/classes/${encodeURIComponent(value.trim())}`);
+  const showResult = useCallback((info: ClassInfo | null) => {
     setLoading(false);
-    if (!res.ok) {
+    if (info) {
+      setClassInfo(info);
+    } else {
       setError("We couldn't find a class with that code. Check with your teacher.");
-      return;
     }
-    setClassInfo(await res.json());
   }, []);
 
+  function lookUp(value: string) {
+    setError("");
+    setLoading(true);
+    fetchClass(value).then(showResult);
+  }
+
   useEffect(() => {
-    if (initialCode) lookUp(initialCode);
-  }, [initialCode, lookUp]);
+    if (initialCode) fetchClass(initialCode).then(showResult);
+  }, [initialCode, showResult]);
 
   async function handleCode(e: React.FormEvent) {
     e.preventDefault();
