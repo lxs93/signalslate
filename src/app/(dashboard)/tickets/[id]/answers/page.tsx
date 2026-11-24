@@ -5,13 +5,21 @@ import { db } from "@/lib/db";
 import { groupAnswers, type AnswerRow } from "@/lib/answers-by-question";
 
 /** Every answer to a ticket, read one question at a time. */
-export default async function AnswersByQuestionPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AnswersByQuestionPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ period?: string }>;
+}) {
   const { id } = await params;
+  const { period: periodParam } = await searchParams;
   const session = await auth();
 
   const ticket = await db.exitTicket.findUnique({
     where: { id },
     include: {
+      periods: { select: { id: true, name: true } },
       questions: {
         orderBy: { orderIndex: "asc" },
         include: { options: { orderBy: { orderIndex: "asc" } } },
@@ -28,8 +36,21 @@ export default async function AnswersByQuestionPage({ params }: { params: Promis
   });
   if (!ticket || ticket.userId !== session!.user!.id) notFound();
 
+  // ?period= narrows to one of the ticket's periods
+  const activePeriod = ticket.periods.length > 1 ? ticket.periods.find((p) => p.id === periodParam) ?? null : null;
+  const inPeriod = activePeriod
+    ? new Set(
+        (
+          await db.enrollment.findMany({ where: { periodId: activePeriod.id }, select: { studentId: true } })
+        ).map((e) => e.studentId)
+      )
+    : null;
+  const submissions = inPeriod
+    ? ticket.submissions.filter((s) => s.studentId && inPeriod.has(s.studentId))
+    : ticket.submissions;
+
   const rowsFor = (questionId: string): AnswerRow[] =>
-    ticket.submissions.map((s) => {
+    submissions.map((s) => {
       const r = s.responses.find((x) => x.questionId === questionId);
       return {
         submissionId: s.id,
@@ -45,17 +66,19 @@ export default async function AnswersByQuestionPage({ params }: { params: Promis
   return (
     <div className="max-w-3xl">
       <div className="mb-2">
-        <Link href={`/tickets/${ticket.id}`} className="text-sm text-slate-500 hover:text-slate-900 transition-colors">
+        <Link href={`/tickets/${ticket.id}${activePeriod ? `?period=${activePeriod.id}` : ""}`} className="text-sm text-slate-500 hover:text-slate-900 transition-colors">
           ← {ticket.title}
         </Link>
       </div>
-      <h1 className="text-2xl font-bold text-slate-900">Answers by question</h1>
+      <h1 className="text-2xl font-bold text-slate-900">
+        Answers by question{activePeriod && <span className="text-slate-500 font-normal"> · {activePeriod.name}</span>}
+      </h1>
       <p className="text-sm text-slate-500 mt-0.5 mb-8">
-        {ticket.submissions.length} {ticket.submissions.length === 1 ? "student" : "students"} answered. Click a name to
+        {submissions.length} {submissions.length === 1 ? "student" : "students"} answered. Click a name to
         see everything that student sent.
       </p>
 
-      {ticket.submissions.length === 0 ? (
+      {submissions.length === 0 ? (
         <p className="text-sm text-slate-500">No responses yet.</p>
       ) : (
         <div className="space-y-10">

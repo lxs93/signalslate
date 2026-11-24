@@ -13,14 +13,18 @@ import { ChoiceResults } from "@/components/choice-results";
 import { summarizeChoices } from "@/lib/choice-results";
 import { ticketStandardsInclude } from "@/lib/tickets";
 import { frameworkLabel } from "@/lib/standards";
+import { correctByPeriod, type PeriodScore } from "@/lib/period-results";
 import type { Question, QuestionOption, Submission } from "@/generated/prisma/client";
 
 export default async function TicketDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ period?: string }>;
 }) {
   const { id } = await params;
+  const { period: periodParam } = await searchParams;
   const session = await auth();
 
   const ticket = await db.exitTicket.findUnique({
@@ -56,6 +60,24 @@ export default async function TicketDetailPage({
     orderBy: { createdAt: "asc" },
   });
 
+  // Which of the ticket's periods each enrolled student is in
+  const enrollments = await db.enrollment.findMany({
+    where: { periodId: { in: ticket.periods.map((p) => p.id) } },
+    select: { studentId: true, periodId: true },
+  });
+  const periodsByStudent = new Map<string, string[]>();
+  for (const e of enrollments) {
+    periodsByStudent.set(e.studentId, [...(periodsByStudent.get(e.studentId) ?? []), e.periodId]);
+  }
+
+  // With two or more periods, ?period= narrows the page to one of them
+  const multiPeriod = ticket.periods.length > 1;
+  const activePeriod = multiPeriod ? ticket.periods.find((p) => p.id === periodParam) ?? null : null;
+  const inActivePeriod = (studentId: string | null) =>
+    !activePeriod || (!!studentId && (periodsByStudent.get(studentId) ?? []).includes(activePeriod.id));
+  const shownSubmissions = ticket.submissions.filter((s) => inActivePeriod(s.studentId));
+  const periodQuery = activePeriod ? `?period=${activePeriod.id}` : "";
+
   // Enrolled students in this ticket's sections who haven't answered yet
   const submittedStudentIds = ticket.submissions
     .map((s: Submission) => s.studentId)
@@ -63,7 +85,9 @@ export default async function TicketDetailPage({
   const notSubmitted = await db.student.findMany({
     where: {
       teacherId: session!.user!.id!,
-      enrollments: { some: { periodId: { in: ticket.periods.map((p: { id: string }) => p.id) } } },
+      enrollments: {
+        some: { periodId: { in: activePeriod ? [activePeriod.id] : ticket.periods.map((p: { id: string }) => p.id) } },
+      },
       id: { notIn: submittedStudentIds },
     },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
@@ -73,9 +97,31 @@ export default async function TicketDetailPage({
   // How many students picked each multiple-choice option
   const optionCounts = await db.response.groupBy({
     by: ["selectedOptionId"],
-    where: { question: { exitTicketId: ticket.id }, selectedOptionId: { not: null } },
+    where: {
+      question: { exitTicketId: ticket.id },
+      selectedOptionId: { not: null },
+      ...(activePeriod ? { submissionId: { in: shownSubmissions.map((s) => s.id) } } : {}),
+    },
     _count: { _all: true },
   });
+
+  // On "All periods", how each period did on each marked multiple-choice question
+  const scoresByQuestion = new Map<string, PeriodScore[]>();
+  if (multiPeriod && !activePeriod) {
+    const marked = await db.response.findMany({
+      where: {
+        question: { exitTicketId: ticket.id, options: { some: { isCorrect: true } } },
+        selectedOptionId: { not: null },
+      },
+      select: { questionId: true, submission: { select: { studentId: true } }, selectedOption: { select: { isCorrect: true } } },
+    });
+    for (const q of ticket.questions) {
+      const answers = marked
+        .filter((r) => r.questionId === q.id)
+        .map((r) => ({ studentId: r.submission.studentId, isCorrect: !!r.selectedOption?.isCorrect }));
+      if (answers.length) scoresByQuestion.set(q.id, correctByPeriod(answers, periodsByStudent, ticket.periods));
+    }
+  }
   const countByOption = new Map(
     optionCounts.map((r) => [r.selectedOptionId as string, r._count._all])
   );
@@ -142,10 +188,29 @@ export default async function TicketDetailPage({
         )}
       </div>
 
+      {multiPeriod && (
+        <nav aria-label="Period" className="mb-4 flex flex-wrap items-center gap-1.5">
+          {[{ id: "", name: "All periods" }, ...ticket.periods].map((p) => {
+            const current = (activePeriod?.id ?? "") === p.id;
+            return (
+              <Link
+                key={p.id || "all"}
+                href={p.id ? `/tickets/${ticket.id}?period=${p.id}` : `/tickets/${ticket.id}`}
+                aria-current={current ? "page" : undefined}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  current ? "bg-slate-600 text-white" : "text-slate-600 hover:bg-slate-100"
+                }`}
+              >
+                {p.name}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
       {(ticket.isOpen || notSubmitted.length > 0) && ticket.periods.length > 0 && (
         <SubmissionProgress
-          submitted={ticket._count.submissions}
-          expected={ticket._count.submissions + notSubmitted.length}
+          submitted={shownSubmissions.length}
+          expected={shownSubmissions.length + notSubmitted.length}
           live={ticket.isOpen}
         />
       )}
@@ -179,7 +244,10 @@ export default async function TicketDetailPage({
                 {q.questionType === "SHORT_ANSWER" ? "Short answer" : "Multiple choice"}
               </p>
               {q.questionType === "MULTIPLE_CHOICE" && ticket._count.submissions > 0 && (
-                <ChoiceResults result={summarizeChoices(q.options, countByOption)} />
+                <>
+                  <ChoiceResults result={summarizeChoices(q.options, countByOption)} />
+                  {scoresByQuestion.has(q.id) && <PeriodScores scores={scoresByQuestion.get(q.id)!} />}
+                </>
               )}
               {q.questionType === "MULTIPLE_CHOICE" && ticket._count.submissions === 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -207,21 +275,21 @@ export default async function TicketDetailPage({
       <section className="mb-8">
         <div className="flex items-baseline justify-between gap-4 mb-3">
           <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-            Responses ({ticket._count.submissions})
+            Responses ({shownSubmissions.length})
           </h2>
-          {ticket._count.submissions > 0 && (
-            <Link href={`/tickets/${ticket.id}/answers`} className="text-sm font-medium text-slate-700 hover:text-slate-900 hover:underline">
+          {shownSubmissions.length > 0 && (
+            <Link href={`/tickets/${ticket.id}/answers${periodQuery}`} className="text-sm font-medium text-slate-700 hover:text-slate-900 hover:underline">
               Read answers by question →
             </Link>
           )}
         </div>
-        {ticket.submissions.length === 0 ? (
+        {shownSubmissions.length === 0 ? (
           <p className="text-sm text-slate-500">
             No responses yet. Students answer from their SignalSlate home page, or you can share the student link.
           </p>
         ) : (
           <div className="space-y-1.5">
-            {ticket.submissions.map((sub: Submission) => (
+            {shownSubmissions.map((sub: Submission) => (
               <Link
                 key={sub.id}
                 href={`/tickets/${ticket.id}/submissions/${sub.id}`}
@@ -335,5 +403,33 @@ function SubmissionProgress({ submitted, expected, live }: { submitted: number; 
         <div className="h-1.5 rounded-full bg-emerald-500 transition-all" style={{ width: `${percent}%` }} />
       </div>
     </div>
+  );
+}
+
+/** "Period 2 · 82%   Period 5 · 45%" under a multiple-choice question. */
+function PeriodScores({ scores }: { scores: PeriodScore[] }) {
+  const answered = scores.filter((s) => s.percent !== null);
+  if (answered.length < 2) return null;
+  const low = Math.min(...answered.map((s) => s.percent!));
+  const high = Math.max(...answered.map((s) => s.percent!));
+  return (
+    <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-100 pt-2 text-xs text-slate-500">
+      <span className="font-medium text-slate-600">By period:</span>
+      {answered.map((s) => (
+        <span key={s.periodId}>
+          {s.name}{" "}
+          <span
+            className={`font-semibold tabular-nums ${
+              high - low >= 20 && s.percent === low ? "text-amber-700" : "text-slate-900"
+            }`}
+          >
+            {s.percent}%
+          </span>{" "}
+          <span className="tabular-nums">
+            ({s.correct} of {s.total})
+          </span>
+        </span>
+      ))}
+    </p>
   );
 }

@@ -567,7 +567,7 @@ const TICKETS: TicketSeed[] = [
     },
   },
   {
-    periods: ["p3"],
+    periods: ["p3", "p5"],
     title: "Decimal Place Value",
     subject: "Math",
     lessonTopic: "Comparing decimals to the hundredths",
@@ -589,6 +589,13 @@ const TICKETS: TicketSeed[] = [
       "Kevin Tran": [0, "45 is bigger than 5."],
       "Zoe Adams": [1, "I added a zero to make 0.50 and compared."],
       "Lucas Wright": [0, "0.45 has more digits so it's bigger."],
+      // Period 5 had the same lesson later in the day
+      "Nora Bennett": [0, "45 hundredths is more than 5 tenths because 45 is more than 5."],
+      "Caleb Price": [0, "Longer decimals are bigger."],
+      "Leah Foster": [1, "0.5 = 0.50 and 50 > 45."],
+      "Ryan Ortiz": [0, "0.45 because it goes further."],
+      "Jasmine Reed": [0, "I think 0.45 since 45 > 5."],
+      "Owen Hughes": [2, "They are both about half."],
     },
   },
 

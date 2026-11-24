@@ -32,7 +32,7 @@ npm run standards:load   # Common Core, NGSS and California standards for the pi
 npm run db:seed          # Demo data (also loads the standards)
 # Creates: demo@signalslate.com / demo1234
 # Creates: Periods 2, 3, 5 (class codes DEMO42, DEMO43, DEMO45), 32 students
-# Creates: 11 exit tickets (ELA, Math, Science), 109 submissions, 10 pre-built analyses
+# Creates: 11 exit tickets (ELA, Math, Science; one taught in two periods), 115 submissions, 10 pre-built analyses
 ```
 
 ### 4. Start the dev server
