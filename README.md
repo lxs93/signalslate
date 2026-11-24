@@ -92,11 +92,16 @@ Open [http://localhost:3000](http://localhost:3000)
 ```bash
 npm run dev          # Start dev server
 npm run build        # Production build
+npm run lint         # ESLint (Next.js core-web-vitals + TypeScript rules)
+npm run typecheck    # TypeScript, no emit
+npm test             # Vitest in watch mode (npm run test:run for a single run)
 npm run db:migrate   # Run Prisma migrations + generate client
 npm run db:push      # Push schema without migration history (rapid prototyping)
 npm run db:seed      # Load demo data
 npm run db:generate  # Regenerate Prisma client only
 ```
+
+Tests live next to the code as `*.test.ts(x)` and run in Node by default. Component tests add `// @vitest-environment jsdom` at the top and use React Testing Library.
 
 ## Deployment (Vercel + Neon)
 
