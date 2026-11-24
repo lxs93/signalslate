@@ -106,3 +106,31 @@ describe("checkStudentNames", () => {
     expect(checkStudentNames([n("Ana", "x".repeat(51))])).toMatch(/^“Ana x+…” is too long/);
   });
 });
+
+describe("ticket text limits", () => {
+  const ticket = (over: object = {}) => ({
+    title: "T",
+    subject: "S",
+    lessonTopic: "L",
+    questions: [
+      { prompt: "a", questionType: "SHORT_ANSWER" as const, orderIndex: 0 },
+      { prompt: "b", questionType: "MULTIPLE_CHOICE" as const, orderIndex: 1, options: [{ optionText: "x", orderIndex: 0 }, { optionText: "y", orderIndex: 1 }] },
+    ],
+    ...over,
+  });
+
+  it("accepts text at the limits", () => {
+    expect(createTicketSchema.safeParse(ticket({ title: "x".repeat(120), subject: "x".repeat(60), lessonTopic: "x".repeat(120) })).success).toBe(true);
+  });
+
+  it("rejects text past them", () => {
+    expect(createTicketSchema.safeParse(ticket({ title: "x".repeat(121) })).success).toBe(false);
+    expect(createTicketSchema.safeParse(ticket({ subject: "x".repeat(61) })).success).toBe(false);
+    const longPrompt = ticket();
+    longPrompt.questions[0].prompt = "x".repeat(501);
+    expect(createTicketSchema.safeParse(longPrompt).success).toBe(false);
+    const longOption = ticket();
+    longOption.questions[1].options![0].optionText = "x".repeat(201);
+    expect(createTicketSchema.safeParse(longOption).success).toBe(false);
+  });
+});

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { TICKET_LIMITS } from "@/lib/validations";
 
 export interface QuestionDraft {
   prompt: string;
@@ -161,6 +162,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                 rows={1}
                 value={q.prompt}
                 onChange={(e) => updateQuestion(qIndex, { prompt: e.target.value })}
+                maxLength={TICKET_LIMITS.prompt}
                 placeholder="What did you learn today?"
                 className="min-h-9 resize-none field-sizing-content"
               />
@@ -198,6 +200,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                         updateOption(qIndex, oIndex, { optionText: e.target.value })
                       }
                       placeholder={`Option ${oIndex + 1}`}
+                      maxLength={TICKET_LIMITS.option}
                       aria-label={`Question ${qIndex + 1}, option ${oIndex + 1}`}
                       className="flex-1"
                     />

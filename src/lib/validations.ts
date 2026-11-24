@@ -11,15 +11,26 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+/** Longest text allowed in each part of a ticket */
+export const TICKET_LIMITS = { title: 120, subject: 60, lessonTopic: 120, prompt: 500, option: 200 } as const;
+
 export const questionOptionSchema = z.object({
-  optionText: z.string().trim().min(1, "Option text is required"),
+  optionText: z
+    .string()
+    .trim()
+    .min(1, "Option text is required")
+    .max(TICKET_LIMITS.option, `Answer options can be up to ${TICKET_LIMITS.option} characters`),
   orderIndex: z.number(),
   isCorrect: z.boolean().nullable().optional(),
 });
 
 export const questionSchema = z
   .object({
-    prompt: z.string().trim().min(1, "Question prompt is required"),
+    prompt: z
+      .string()
+      .trim()
+      .min(1, "Question prompt is required")
+      .max(TICKET_LIMITS.prompt, `Questions can be up to ${TICKET_LIMITS.prompt} characters`),
     questionType: z.enum(["SHORT_ANSWER", "MULTIPLE_CHOICE"]),
     orderIndex: z.number(),
     options: z.array(questionOptionSchema).max(6).optional(),
@@ -47,9 +58,21 @@ export const standardTagSchema = z.object({
 });
 
 export const ticketDetailsSchema = z.object({
-  title: z.string().trim().min(1, "Title is required"),
-  subject: z.string().trim().min(1, "Subject is required"),
-  lessonTopic: z.string().trim().min(1, "Lesson topic is required"),
+  title: z
+    .string()
+    .trim()
+    .min(1, "Title is required")
+    .max(TICKET_LIMITS.title, `Titles can be up to ${TICKET_LIMITS.title} characters`),
+  subject: z
+    .string()
+    .trim()
+    .min(1, "Subject is required")
+    .max(TICKET_LIMITS.subject, `Subjects can be up to ${TICKET_LIMITS.subject} characters`),
+  lessonTopic: z
+    .string()
+    .trim()
+    .min(1, "Lesson topic is required")
+    .max(TICKET_LIMITS.lessonTopic, `Lesson topics can be up to ${TICKET_LIMITS.lessonTopic} characters`),
   standards: z
     .array(standardTagSchema)
     .max(MAX_TICKET_STANDARDS, `A ticket can have up to ${MAX_TICKET_STANDARDS} standards`)

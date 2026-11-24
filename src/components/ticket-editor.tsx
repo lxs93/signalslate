@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuestionBuilder, type QuestionDraft } from "@/components/question-builder";
 import { StandardsPicker } from "@/components/standards-picker";
 import type { StandardTag } from "@/lib/standards";
-import { MAX_TICKET_STANDARDS } from "@/lib/validations";
+import { MAX_TICKET_STANDARDS, TICKET_LIMITS } from "@/lib/validations";
 
 type Period = { id: string; name: string };
 type Step = "details" | "questions";
@@ -180,6 +180,7 @@ export function TicketEditor({
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  maxLength={TICKET_LIMITS.title}
                   placeholder="e.g. Fractions Exit Check"
                 />
               </div>
@@ -189,6 +190,7 @@ export function TicketEditor({
                   id="subject"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
+                  maxLength={TICKET_LIMITS.subject}
                   placeholder="e.g. Math"
                 />
               </div>
@@ -198,6 +200,7 @@ export function TicketEditor({
                   id="topic"
                   value={lessonTopic}
                   onChange={(e) => setLessonTopic(e.target.value)}
+                  maxLength={TICKET_LIMITS.lessonTopic}
                   placeholder="e.g. Adding unlike denominators"
                 />
               </div>
