@@ -42,3 +42,14 @@ describe("buildAnalysisPrompt", () => {
     expect(buildAnalysisPrompt(ticket, submissions)).not.toContain("STANDARDS");
   });
 });
+
+describe("buildAnalysisPrompt confidence", () => {
+  it("adds how sure each student said they were", () => {
+    const prompt = buildAnalysisPrompt(ticket, [{ ...submissions[0], confidence: 4 }]);
+    expect(prompt).toContain("--- Lily Chen (said: Very sure) ---");
+  });
+
+  it("leaves it out when the ticket didn't ask", () => {
+    expect(buildAnalysisPrompt(ticket, submissions)).toContain("--- Lily Chen ---");
+  });
+});

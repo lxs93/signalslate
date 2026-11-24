@@ -39,6 +39,8 @@ export interface SubmissionWithResponses {
   id: string;
   studentName: string;
   submittedAt: Date;
+  /** 1–4 when the ticket asked how sure the student was */
+  confidence?: number | null;
   responses: Array<{
     id: string;
     questionId: string;

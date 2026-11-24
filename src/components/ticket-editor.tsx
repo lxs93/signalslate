@@ -19,6 +19,7 @@ export interface TicketDraft {
   subject: string;
   lessonTopic: string;
   standards: StandardTag[];
+  askConfidence: boolean;
   periodIds: string[];
   questions: QuestionDraft[];
 }
@@ -64,6 +65,7 @@ export function TicketEditor({
   const [subject, setSubject] = useState(initial?.subject ?? "");
   const [lessonTopic, setLessonTopic] = useState(initial?.lessonTopic ?? "");
   const [standards, setStandards] = useState<StandardTag[]>(initial?.standards ?? []);
+  const [askConfidence, setAskConfidence] = useState(initial?.askConfidence ?? true);
   const [selectedPeriodIds, setSelectedPeriodIds] = useState<string[]>(initial?.periodIds ?? []);
   const [questions, setQuestions] = useState<QuestionDraft[]>(initial?.questions ?? []);
   const [error, setError] = useState("");
@@ -79,6 +81,7 @@ export function TicketEditor({
       subject,
       lessonTopic,
       standards: standards.map(({ standardId, code }) => ({ standardId, code })),
+      askConfidence,
       periodIds: selectedPeriodIds,
       ...(includeQuestions ? { questions } : {}),
     };
@@ -204,6 +207,21 @@ export function TicketEditor({
                 </Label>
                 <StandardsPicker value={standards} onChange={setStandards} max={MAX_TICKET_STANDARDS} />
               </div>
+              <label className="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={askConfidence}
+                  onChange={(e) => setAskConfidence(e.target.checked)}
+                  className="mt-0.5 rounded"
+                />
+                <span>
+                  Ask students how sure they are
+                  <span className="block text-xs text-slate-500">
+                    One question at the end, from &ldquo;Not sure&rdquo; to &ldquo;Very sure&rdquo;. Shows who was
+                    confident but wrong.
+                  </span>
+                </span>
+              </label>
               {periods.length > 0 && (
                 <div className="space-y-1.5">
                   <Label>

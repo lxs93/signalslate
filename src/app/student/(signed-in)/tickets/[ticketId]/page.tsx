@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getStudentId } from "@/lib/session";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { isOpenNow } from "@/lib/ticket-status";
+import { confidenceLabel } from "@/lib/confidence";
 
 export default async function StudentAnswersPage({
   params,
@@ -100,6 +101,12 @@ export default async function StudentAnswersPage({
           );
         })}
       </div>
+
+      {confidenceLabel(submission.confidence) && (
+        <p className="mt-4 text-sm text-slate-500">
+          How sure you were: <span className="font-medium text-slate-700">{confidenceLabel(submission.confidence)}</span>
+        </p>
+      )}
     </div>
   );
 }

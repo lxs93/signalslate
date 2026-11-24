@@ -7,6 +7,7 @@ const source = {
   lessonTopic: "Writing ratios",
   standards: [{ standardId: "s1", code: "6.RP.A.1", framework: "Common Core" }],
   periodIds: ["p2"],
+  askConfidence: true,
   questions: [
     { prompt: "Old question", questionType: "SHORT_ANSWER" as const, orderIndex: 0, options: [] },
     { prompt: "Another", questionType: "SHORT_ANSWER" as const, orderIndex: 1, options: [] },

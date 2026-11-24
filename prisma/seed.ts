@@ -47,6 +47,8 @@ interface TicketSeed {
   isOpen: boolean;
   daysAgo: number;
   questions: QuestionSeed[];
+  /** Students said how sure they were: full student name → 1 (not sure) to 4 (very sure) */
+  confidence?: Record<string, number>;
   /** Full student name → answers. Students left out didn't submit. */
   answers: Record<string, Answer[]>;
   analysis?: AnalysisSeed;
@@ -277,6 +279,10 @@ const TICKETS: TicketSeed[] = [
     subject: "Math",
     lessonTopic: "Writing and interpreting ratios",
     standards: ["CCSS.MATH.CONTENT.6.RP.A.1", "CCSS.MATH.CONTENT.6.RP.A.3"],
+    confidence: {
+      "Jordan Lee": 4, "Maria Gonzalez": 2, "Darius Brown": 3, "Priya Patel": 4, "Alex Kim": 4, "Sofia Rossi": 3,
+      "Marcus Johnson": 3, "Emma Nguyen": 3, "Ethan Walker": 2, "Aisha Rahman": 4, "Lily Chen": 1,
+    },
     isOpen: false,
     daysAgo: 4,
     questions: [
@@ -572,6 +578,10 @@ const TICKETS: TicketSeed[] = [
     subject: "Math",
     lessonTopic: "Comparing decimals to the hundredths",
     standards: ["CCSS.MATH.CONTENT.5.NBT.A.3"],
+    confidence: {
+      "Mateo Silva": 4, "Chloe Martin": 3, "Kevin Tran": 4, "Zoe Adams": 3, "Lucas Wright": 3, "Nora Bennett": 4,
+      "Caleb Price": 3, "Leah Foster": 4, "Ryan Ortiz": 2, "Jasmine Reed": 2, "Owen Hughes": 1,
+    },
     isOpen: true,
     daysAgo: 0,
     questions: [
@@ -838,6 +848,7 @@ async function main() {
         createdAt: daysAgo(t.daysAgo, -60),
         periods: { connect: t.periods.map((k) => ({ id: periodIds[k] })) },
         standards: { create: await standardTags(t.standards ?? []) },
+        askConfidence: !!t.confidence,
       },
     });
 
@@ -866,6 +877,7 @@ async function main() {
           exitTicketId: ticket.id,
           studentId,
           studentName: name,
+          confidence: t.confidence?.[name] ?? null,
           submittedAt: daysAgo(t.daysAgo, -45 + si * 2),
         },
       });

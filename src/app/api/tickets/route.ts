@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { title, subject, lessonTopic, standards = [], periodIds = [], questions } = parsed.data;
+  const { title, subject, lessonTopic, standards = [], periodIds = [], questions, askConfidence = true } = parsed.data;
 
   if (!(await ownsPeriods(userId, periodIds))) {
     return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
@@ -46,6 +46,7 @@ export async function POST(req: NextRequest) {
         title,
         subject,
         lessonTopic,
+        askConfidence,
         periods: { connect: periodIds.map((id) => ({ id })) },
       },
     });

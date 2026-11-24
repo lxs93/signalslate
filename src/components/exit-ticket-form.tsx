@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CONFIDENCE_LEVELS } from "@/lib/confidence";
 
 export interface TicketFormData {
   id: string;
   title: string;
   subject: string;
   lessonTopic: string;
+  askConfidence: boolean;
   questions: {
     id: string;
     prompt: string;
@@ -28,6 +30,7 @@ export function ExitTicketForm({ ticket }: { ticket: TicketFormData }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [confidence, setConfidence] = useState("");
 
   function setAnswer(questionId: string, value: string) {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
@@ -41,6 +44,11 @@ export function ExitTicketForm({ ticket }: { ticket: TicketFormData }) {
         setError(`Please answer question ${q.orderIndex + 1}`);
         return;
       }
+    }
+
+    if (ticket.askConfidence && !confidence) {
+      setError("Please say how sure you are about your answers");
+      return;
     }
 
     setError("");
@@ -57,7 +65,7 @@ export function ExitTicketForm({ ticket }: { ticket: TicketFormData }) {
       const res = await fetch(`/api/student/tickets/${ticketId}/submissions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ responses }),
+        body: JSON.stringify({ responses, confidence: confidence ? Number(confidence) : null }),
       });
 
       if (!res.ok) {
@@ -122,6 +130,35 @@ export function ExitTicketForm({ ticket }: { ticket: TicketFormData }) {
               </CardContent>
             </Card>
           ))}
+
+          {ticket.askConfidence && (
+            <Card className="border-slate-200">
+              <CardHeader className="pb-3">
+                <CardTitle id="confidence-label" className="text-sm font-semibold">
+                  How sure are you about your answers?
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup
+                  aria-labelledby="confidence-label"
+                  value={confidence}
+                  onValueChange={setConfidence}
+                  className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+                >
+                  {CONFIDENCE_LEVELS.map((level) => (
+                    <Label
+                      key={level.value}
+                      htmlFor={`confidence-${level.value}`}
+                      className="flex cursor-pointer items-center gap-2 rounded-md border border-slate-200 px-3 py-2 font-normal has-[[data-state=checked]]:border-slate-900 has-[[data-state=checked]]:bg-slate-50"
+                    >
+                      <RadioGroupItem value={String(level.value)} id={`confidence-${level.value}`} />
+                      {level.label}
+                    </Label>
+                  ))}
+                </RadioGroup>
+              </CardContent>
+            </Card>
+          )}
 
           {error && (
             <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">{error}</p>

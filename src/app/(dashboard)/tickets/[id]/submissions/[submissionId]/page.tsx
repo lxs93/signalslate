@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
+import { confidenceLabel } from "@/lib/confidence";
 import type { Question, QuestionOption, Response, QuestionType } from "@/generated/prisma/client";
 
 type ResponseWithOption = Response & { selectedOption: QuestionOption | null };
@@ -74,6 +75,7 @@ export default async function SubmissionDetailPage({
             hour: "numeric",
             minute: "2-digit",
           })}
+          {confidenceLabel(submission.confidence) && <> · {confidenceLabel(submission.confidence)}</>}
         </p>
       </div>
 

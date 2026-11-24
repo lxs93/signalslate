@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { AnalysisPanel } from "@/components/analysis-panel";
 import { LiveRefresh } from "@/components/live-refresh";
 import { isOpenNow } from "@/lib/ticket-status";
+import { confidenceLabel, summarizeConfidence, type ConfidenceSummary } from "@/lib/confidence";
 import { TicketActions } from "@/components/ticket-actions";
 import { PeriodSelector } from "@/components/period-selector";
 import { DeleteTicketButton } from "@/components/delete-ticket-button";
@@ -126,6 +127,30 @@ export default async function TicketDetailPage({
   const countByOption = new Map(
     optionCounts.map((r) => [r.selectedOptionId as string, r._count._all])
   );
+
+  // How sure students were, against how they did on marked multiple-choice questions
+  let confidence: ConfidenceSummary | null = null;
+  if (ticket.askConfidence && shownSubmissions.length > 0) {
+    const markedAnswers = await db.response.findMany({
+      where: {
+        submissionId: { in: shownSubmissions.map((s) => s.id) },
+        question: { options: { some: { isCorrect: true } } },
+      },
+      select: { submissionId: true, selectedOption: { select: { isCorrect: true } } },
+    });
+    confidence = summarizeConfidence(
+      shownSubmissions.map((s) => {
+        const mine = markedAnswers.filter((r) => r.submissionId === s.id);
+        return {
+          submissionId: s.id,
+          studentName: s.studentName,
+          confidence: s.confidence,
+          marked: mine.length,
+          wrong: mine.filter((r) => !r.selectedOption?.isCorrect).length,
+        };
+      })
+    );
+  }
 
   const openNow = isOpenNow(ticket);
   const latestAnalysis = ticket.analyses[0] ?? null;
@@ -274,6 +299,10 @@ export default async function TicketDetailPage({
         </div>
       </section>
 
+      {confidence && confidence.answered > 0 && (
+        <ConfidencePanel summary={confidence} ticketId={ticket.id} />
+      )}
+
       {/* Submissions */}
       <section className="mb-8">
         <div className="flex items-baseline justify-between gap-4 mb-3">
@@ -305,6 +334,9 @@ export default async function TicketDetailPage({
                   )}
                 </span>
                 <span className="text-xs text-slate-500 flex items-center gap-2">
+                  {confidenceLabel(sub.confidence) && (
+                    <span className="mr-2 text-slate-400">{confidenceLabel(sub.confidence)}</span>
+                  )}
                   {new Date(sub.submittedAt).toLocaleTimeString("en-US", {
                     hour: "numeric",
                     minute: "2-digit",
@@ -434,5 +466,54 @@ function PeriodScores({ scores }: { scores: PeriodScore[] }) {
         </span>
       ))}
     </p>
+  );
+}
+
+/** How sure students said they were, and who was sure but missed a marked question. */
+function ConfidencePanel({ summary, ticketId }: { summary: ConfidenceSummary; ticketId: string }) {
+  const max = Math.max(...summary.counts.map((c) => c.count), 1);
+  return (
+    <section className="mb-8">
+      <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">How sure students were</h2>
+      <div className="bg-white border border-slate-200 rounded-lg px-4 py-4">
+        <ul className="grid grid-cols-4 gap-3">
+          {summary.counts.map((c) => (
+            <li key={c.value} className="text-center">
+              <div className="flex h-14 items-end justify-center" aria-hidden="true">
+                <div
+                  className={`w-8 rounded-t ${c.value >= 3 ? "bg-slate-500" : "bg-slate-300"}`}
+                  style={{ height: `${Math.max(4, (c.count / max) * 56)}px` }}
+                />
+              </div>
+              <p className="mt-1 text-sm font-semibold tabular-nums text-slate-900">{c.count}</p>
+              <p className="text-xs text-slate-500">{c.label}</p>
+            </li>
+          ))}
+        </ul>
+        {summary.confidentButWrong.length > 0 && (
+          <div className="mt-4 border-t border-slate-100 pt-3">
+            <p className="text-sm font-medium text-amber-700">Confident but wrong</p>
+            <p className="text-xs text-slate-500 mb-2">
+              Sure of their answers but missed a marked question. A misconception they hold firmly is worth a word.
+            </p>
+            <ul className="flex flex-wrap gap-1.5">
+              {summary.confidentButWrong.map((r) => (
+                <li key={r.submissionId}>
+                  <Link
+                    href={`/tickets/${ticketId}/submissions/${r.submissionId}`}
+                    className="inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2 py-1 text-xs text-amber-900 hover:bg-amber-100"
+                  >
+                    {r.studentName}
+                    <span className="text-amber-700">
+                      · {confidenceLabel(r.confidence)}, missed {r.wrong} of {r.marked}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

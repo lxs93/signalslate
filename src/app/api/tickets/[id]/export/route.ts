@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { toCsv } from "@/lib/csv";
+import { confidenceLabel } from "@/lib/confidence";
 
 /** Downloads a ticket's responses as CSV, one row per student. */
 export async function GET(
@@ -61,6 +62,7 @@ export async function GET(
   );
 
   const header = ["Last name", "First name", "Section", "Status", "Submitted at"];
+  if (ticket.askConfidence) header.push("How sure");
   ticket.questions.forEach((q, i) => {
     header.push(`Q${i + 1}: ${q.prompt}`);
     if (keyed.includes(q)) header.push(`Q${i + 1} correct`);
@@ -75,6 +77,7 @@ export async function GET(
       sub.student ? sectionsOf(sub.student.enrollments) : "",
       "Submitted",
       sub.submittedAt.toISOString(),
+      ...(ticket.askConfidence ? [confidenceLabel(sub.confidence) ?? ""] : []),
     ];
     let score = 0;
     for (const q of ticket.questions) {

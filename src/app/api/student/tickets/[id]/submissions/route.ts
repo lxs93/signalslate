@@ -35,6 +35,11 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
 
+  const confidence = ticket.askConfidence ? parsed.data.confidence ?? null : null;
+  if (ticket.askConfidence && confidence === null) {
+    return NextResponse.json({ error: "Please say how sure you are about your answers" }, { status: 400 });
+  }
+
   // Only accept answers to this ticket's questions, using its own options
   const questionIds = new Set(ticket.questions.map((q) => q.id));
   const optionIds = new Set(ticket.questions.flatMap((q) => q.options.map((o) => o.id)));
@@ -52,7 +57,7 @@ export async function POST(
   try {
     await db.$transaction(async (tx: Prisma.TransactionClient) => {
       const submission = await tx.submission.create({
-        data: { exitTicketId: id, studentId, studentName },
+        data: { exitTicketId: id, studentId, studentName, confidence },
       });
 
       await tx.response.createMany({

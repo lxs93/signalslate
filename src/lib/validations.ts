@@ -44,6 +44,7 @@ export const ticketDetailsSchema = z.object({
     .max(MAX_TICKET_STANDARDS, `A ticket can have up to ${MAX_TICKET_STANDARDS} standards`)
     .optional(),
   periodIds: z.array(z.string()).optional(),
+  askConfidence: z.boolean().optional(),
 });
 
 export const ticketQuestionsSchema = z
@@ -63,6 +64,8 @@ export const updateTicketSchema = ticketDetailsSchema.partial().extend({
 });
 
 export const studentSubmissionSchema = z.object({
+  /** 1 (not sure) to 4 (very sure); required when the ticket asks */
+  confidence: z.number().int().min(1).max(4).nullable().optional(),
   responses: z.array(
     z.object({
       questionId: z.string(),

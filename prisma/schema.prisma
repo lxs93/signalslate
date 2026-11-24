@@ -78,6 +78,8 @@ model ExitTicket {
   closesAt    DateTime?     @map("closes_at")
   /// Students see the multiple-choice answer key once the ticket is closed.
   revealAnswers Boolean     @default(false) @map("reveal_answers")
+  /// Students say how sure they are (1–4) when they submit.
+  askConfidence Boolean     @default(false) @map("ask_confidence")
   createdAt   DateTime      @default(now()) @map("created_at")
   user        User          @relation(fields: [userId], references: [id])
   periods     ClassPeriod[]
@@ -228,6 +230,8 @@ model Submission {
   // Snapshot of the name at submit time
   studentName  String     @map("student_name")
   submittedAt  DateTime   @default(now()) @map("submitted_at")
+  /// How sure the student was, 1 (not sure) to 4 (very sure), when the ticket asked
+  confidence   Int?
   exitTicket   ExitTicket @relation(fields: [exitTicketId], references: [id], onDelete: Cascade)
   student      Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   responses    Response[]

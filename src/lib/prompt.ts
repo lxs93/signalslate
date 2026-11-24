@@ -1,4 +1,5 @@
 import type { QuestionWithOptions, SubmissionWithResponses } from "@/types";
+import { confidenceLabel } from "@/lib/confidence";
 
 /** A standard the ticket checks. Official ones carry a framework and description. */
 export interface PromptStandard {
@@ -32,7 +33,8 @@ Be specific, concise, and actionable. Reference student names only in the studen
 Use lowercase, 2-3 word theme_tags (e.g. "fraction operations", "main idea", "text evidence").
 Frame student follow-up flags as supportive signals for the teacher, not judgments about students.
 Never label a student as failing, at risk, or struggling — use neutral observational language.
-When the ticket lists the standards it checks, judge understanding against what those standards ask, and say which part of a standard a misconception or reteach suggestion is about.`;
+When the ticket lists the standards it checks, judge understanding against what those standards ask, and say which part of a standard a misconception or reteach suggestion is about.
+When students said how sure they were, point out misconceptions held with confidence (pretty or very sure, but wrong): those need more direct reteaching than unsure guesses.`;
 
 export function buildAnalysisPrompt(
   ticket: TicketContext,
@@ -67,7 +69,8 @@ export function buildAnalysisPrompt(
           return `  Q${q.orderIndex + 1}: ${selected || "[no selection]"}`;
         })
         .join("\n");
-      return `--- ${sub.studentName} ---\n${responseLines}`;
+      const sure = confidenceLabel(sub.confidence);
+      return `--- ${sub.studentName}${sure ? ` (said: ${sure})` : ""} ---\n${responseLines}`;
     })
     .join("\n\n");
 

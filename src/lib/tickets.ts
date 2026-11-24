@@ -117,6 +117,7 @@ export async function loadTicketDraft(ticketId: string, userId: string) {
       subject: ticket.subject,
       lessonTopic: ticket.lessonTopic,
       standards: toStandardTags(ticket.standards),
+      askConfidence: ticket.askConfidence,
       periodIds: ticket.periods.map((p) => p.id),
       questions: ticket.questions.map((q, i) => ({
         prompt: q.prompt,
