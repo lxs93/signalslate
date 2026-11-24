@@ -7,9 +7,10 @@ import { FlagCheckInButton } from "@/components/flag-check-in-button";
 
 interface AnalysisPanelProps {
   analysis: AnalysisWithDetails;
+  ticketId: string;
 }
 
-export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
+export function AnalysisPanel({ analysis, ticketId }: AnalysisPanelProps) {
   const strengths = analysis.strengthsText
     ? analysis.strengthsText.split("\n").filter(Boolean)
     : [];
@@ -127,6 +128,12 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
             <p className="text-sm text-slate-600 italic leading-relaxed">
               &ldquo;{analysis.followupQuestion}&rdquo;
             </p>
+            <Link
+              href={`/tickets/new?followup=${ticketId}`}
+              className="mt-3 inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-900 hover:bg-slate-50"
+            >
+              Use as next ticket →
+            </Link>
           </CardContent>
         </Card>
       </div>

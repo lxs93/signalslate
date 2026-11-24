@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -151,11 +152,14 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
           </CardHeader>
           <CardContent className="px-4 pb-4 space-y-3">
             <div className="space-y-1.5">
-              <Label>Question prompt</Label>
-              <Input
+              <Label htmlFor={`question-${qIndex}-prompt`}>Question prompt</Label>
+              <Textarea
+                id={`question-${qIndex}-prompt`}
+                rows={1}
                 value={q.prompt}
                 onChange={(e) => updateQuestion(qIndex, { prompt: e.target.value })}
                 placeholder="What did you learn today?"
+                className="min-h-9 resize-none field-sizing-content"
               />
             </div>
 

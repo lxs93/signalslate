@@ -267,7 +267,7 @@ export default async function TicketDetailPage({
               })}
             </span>
           </div>
-          <AnalysisPanel analysis={latestAnalysis} />
+          <AnalysisPanel analysis={latestAnalysis} ticketId={ticket.id} />
         </section>
       )}
 
