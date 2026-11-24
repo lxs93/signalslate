@@ -232,6 +232,9 @@ model Submission {
   submittedAt  DateTime   @default(now()) @map("submitted_at")
   /// How sure the student was, 1 (not sure) to 4 (very sure), when the ticket asked
   confidence   Int?
+  /// A short note from the teacher that the student sees with their answers
+  feedback     String?    @db.Text
+  feedbackAt   DateTime?  @map("feedback_at")
   exitTicket   ExitTicket @relation(fields: [exitTicketId], references: [id], onDelete: Cascade)
   student      Student?   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   responses    Response[]

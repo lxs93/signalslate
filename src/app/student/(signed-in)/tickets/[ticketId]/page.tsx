@@ -66,6 +66,13 @@ export default async function StudentAnswersPage({
         </p>
       </div>
 
+      {submission.feedback && (
+        <div className="mb-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-sky-800">From your teacher</p>
+          <p className="mt-1 text-sm text-slate-800 whitespace-pre-wrap">{submission.feedback}</p>
+        </div>
+      )}
+
       {ticket.revealAnswers && isOpenNow(ticket) && (
         <p className="text-sm text-slate-500 mb-4">
           Your teacher will show the correct answers after this ticket closes.

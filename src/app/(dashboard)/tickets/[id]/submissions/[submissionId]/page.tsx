@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import { confidenceLabel } from "@/lib/confidence";
+import { FeedbackEditor } from "@/components/feedback-editor";
 import type { Question, QuestionOption, Response, QuestionType } from "@/generated/prisma/client";
 
 type ResponseWithOption = Response & { selectedOption: QuestionOption | null };
@@ -37,6 +38,17 @@ export default async function SubmissionDetailPage({
   if (!submission || submission.exitTicket.userId !== session!.user!.id || submission.exitTicketId !== id) {
     notFound();
   }
+
+  // Previous and next student, in the ticket page's order (newest first)
+  const siblings = await db.submission.findMany({
+    where: { exitTicketId: id },
+    orderBy: { submittedAt: "desc" },
+    select: { id: true, studentName: true },
+  });
+  const at = siblings.findIndex((s) => s.id === submission.id);
+  const prev = at > 0 ? siblings[at - 1] : null;
+  const next = at >= 0 && at < siblings.length - 1 ? siblings[at + 1] : null;
+  const firstName = submission.studentName.split(" ")[0] || submission.studentName;
 
   const responseByQuestion = new Map<string, ResponseWithOption>(
     submission.responses.map((r: ResponseWithOption) => [r.questionId, r])
@@ -141,6 +153,33 @@ export default async function SubmissionDetailPage({
           );
         })}
       </div>
+
+      <div className="mt-6 bg-white border border-slate-200 rounded-lg px-4 py-4">
+        <FeedbackEditor
+          key={submission.id}
+          ticketId={id}
+          submissionId={submission.id}
+          firstName={firstName}
+          initial={submission.feedback}
+        />
+      </div>
+
+      {(prev || next) && (
+        <nav aria-label="Other students" className="mt-6 flex items-center justify-between gap-4 text-sm">
+          {prev ? (
+            <Link href={`/tickets/${id}/submissions/${prev.id}`} className="text-slate-600 hover:text-slate-900 hover:underline">
+              ← {prev.studentName}
+            </Link>
+          ) : (
+            <span />
+          )}
+          {next && (
+            <Link href={`/tickets/${id}/submissions/${next.id}`} className="text-slate-600 hover:text-slate-900 hover:underline">
+              {next.studentName} →
+            </Link>
+          )}
+        </nav>
+      )}
     </div>
   );
 }

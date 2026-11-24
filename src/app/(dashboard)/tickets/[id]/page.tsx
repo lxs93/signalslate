@@ -334,6 +334,7 @@ export default async function TicketDetailPage({
                   )}
                 </span>
                 <span className="text-xs text-slate-500 flex items-center gap-2">
+                  {sub.feedback && <span className="mr-2 text-sky-700">Note sent</span>}
                   {confidenceLabel(sub.confidence) && (
                     <span className="mr-2 text-slate-400">{confidenceLabel(sub.confidence)}</span>
                   )}

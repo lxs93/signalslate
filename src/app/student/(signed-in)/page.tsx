@@ -15,7 +15,7 @@ export default async function StudentHomePage() {
         where: { enrollments: { some: { studentId } } },
         select: { name: true },
       },
-      submissions: { where: { studentId }, select: { submittedAt: true } },
+      submissions: { where: { studentId }, select: { submittedAt: true, feedback: true } },
       _count: { select: { questions: true } },
     },
   });
@@ -73,6 +73,9 @@ export default async function StudentHomePage() {
                         {t.subject} · Submitted{" "}
                         {t.submissions[0].submittedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </p>
+                      {t.submissions[0].feedback && (
+                        <p className="mt-1 text-xs font-medium text-sky-700">Your teacher left you a note</p>
+                      )}
                     </div>
                     <span className="text-xs text-slate-500 shrink-0 ml-3">
                       {t.revealAnswers && !isOpenNow(t) ? (

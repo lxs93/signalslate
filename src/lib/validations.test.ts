@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createTicketSchema, parseStudentNames, updateTicketSchema } from "./validations";
+import { createTicketSchema, parseStudentNames, submissionFeedbackSchema, updateTicketSchema } from "./validations";
 
 describe("parseStudentNames", () => {
   it("reads First Last, Last, First, and single names", () => {
@@ -61,5 +61,16 @@ describe("updateTicketSchema closesAt", () => {
 
   it("rejects anything else", () => {
     expect(updateTicketSchema.safeParse({ closesAt: "2:45 PM" }).success).toBe(false);
+  });
+});
+
+describe("submissionFeedbackSchema", () => {
+  it("trims notes and allows clearing them", () => {
+    expect(submissionFeedbackSchema.parse({ feedback: "  Nice work.  " })).toEqual({ feedback: "Nice work." });
+    expect(submissionFeedbackSchema.parse({ feedback: null })).toEqual({ feedback: null });
+  });
+
+  it("caps notes at 1000 characters", () => {
+    expect(submissionFeedbackSchema.safeParse({ feedback: "x".repeat(1001) }).success).toBe(false);
   });
 });

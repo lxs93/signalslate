@@ -63,6 +63,17 @@ export const updateTicketSchema = ticketDetailsSchema.partial().extend({
   closesAt: z.iso.datetime({ offset: true }).nullable().optional(),
 });
 
+export const MAX_FEEDBACK_LENGTH = 1000;
+
+/** A teacher's note on one submission; empty or null removes it */
+export const submissionFeedbackSchema = z.object({
+  feedback: z
+    .string()
+    .trim()
+    .max(MAX_FEEDBACK_LENGTH, `Notes can be up to ${MAX_FEEDBACK_LENGTH} characters`)
+    .nullable(),
+});
+
 export const studentSubmissionSchema = z.object({
   /** 1 (not sure) to 4 (very sure); required when the ticket asks */
   confidence: z.number().int().min(1).max(4).nullable().optional(),
