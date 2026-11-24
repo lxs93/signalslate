@@ -10,6 +10,8 @@ import { PeriodSelector } from "@/components/period-selector";
 import { DeleteTicketButton } from "@/components/delete-ticket-button";
 import { ChoiceResults } from "@/components/choice-results";
 import { summarizeChoices } from "@/lib/choice-results";
+import { ticketStandardsInclude } from "@/lib/tickets";
+import { frameworkLabel } from "@/lib/standards";
 import type { Question, QuestionOption, Submission } from "@/generated/prisma/client";
 
 export default async function TicketDetailPage({
@@ -24,6 +26,7 @@ export default async function TicketDetailPage({
     where: { id },
     include: {
       periods: true,
+      standards: ticketStandardsInclude,
       questions: {
         orderBy: { orderIndex: "asc" },
         include: { options: { orderBy: { orderIndex: "asc" } } },
@@ -96,9 +99,24 @@ export default async function TicketDetailPage({
           <h1 className="text-2xl font-bold text-slate-900 truncate">{ticket.title}</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {ticket.subject} · {ticket.lessonTopic}
-            {ticket.standard && <> · <span className="font-mono text-xs">{ticket.standard}</span></>}
             {ticket.periods.length > 0 && <> · {ticket.periods.map((p) => p.name).join(", ")}</>}
           </p>
+          {ticket.standards.length > 0 && (
+            <ul className="mt-2 flex flex-wrap gap-1.5" aria-label="Standards">
+              {ticket.standards.map((s) => (
+                <li
+                  key={s.id}
+                  title={s.standard?.description}
+                  className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2 py-0.5"
+                >
+                  <span className="text-[0.6875rem] font-medium uppercase tracking-wide text-slate-500">
+                    {s.standard ? frameworkLabel(s.standard.framework) : "Custom"}
+                  </span>
+                  <span className="font-mono text-xs text-slate-900">{s.code}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <span className="flex items-center gap-1.5 shrink-0 mt-1 text-sm text-slate-500">
           <span className={`w-1.5 h-1.5 rounded-full ${ticket.isOpen ? "bg-emerald-500" : "bg-slate-300"}`} />

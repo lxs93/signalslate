@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuestionBuilder, type QuestionDraft } from "@/components/question-builder";
+import { StandardsPicker } from "@/components/standards-picker";
+import type { StandardTag } from "@/lib/standards";
+import { MAX_TICKET_STANDARDS } from "@/lib/validations";
 
 type Period = { id: string; name: string };
 type Step = "details" | "questions";
@@ -15,7 +18,7 @@ export interface TicketDraft {
   title: string;
   subject: string;
   lessonTopic: string;
-  standard: string;
+  standards: StandardTag[];
   periodIds: string[];
   questions: QuestionDraft[];
 }
@@ -60,7 +63,7 @@ export function TicketEditor({
   const [title, setTitle] = useState(initial?.title ?? "");
   const [subject, setSubject] = useState(initial?.subject ?? "");
   const [lessonTopic, setLessonTopic] = useState(initial?.lessonTopic ?? "");
-  const [standard, setStandard] = useState(initial?.standard ?? "");
+  const [standards, setStandards] = useState<StandardTag[]>(initial?.standards ?? []);
   const [selectedPeriodIds, setSelectedPeriodIds] = useState<string[]>(initial?.periodIds ?? []);
   const [questions, setQuestions] = useState<QuestionDraft[]>(initial?.questions ?? []);
   const [error, setError] = useState("");
@@ -75,7 +78,7 @@ export function TicketEditor({
       title,
       subject,
       lessonTopic,
-      standard: standard.trim() || null,
+      standards: standards.map(({ standardId, code }) => ({ standardId, code })),
       periodIds: selectedPeriodIds,
       ...(includeQuestions ? { questions } : {}),
     };
@@ -196,15 +199,10 @@ export function TicketEditor({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="standard">
-                  Standard <span className="text-slate-400 font-normal">(optional)</span>
+                <Label htmlFor="standards">
+                  Standards <span className="text-slate-400 font-normal">(optional)</span>
                 </Label>
-                <Input
-                  id="standard"
-                  value={standard}
-                  onChange={(e) => setStandard(e.target.value)}
-                  placeholder="e.g. CCSS.MATH.CONTENT.5.NF.A.1"
-                />
+                <StandardsPicker value={standards} onChange={setStandards} max={MAX_TICKET_STANDARDS} />
               </div>
               {periods.length > 0 && (
                 <div className="space-y-1.5">
@@ -244,7 +242,9 @@ export function TicketEditor({
             <CardContent className="px-4 py-3">
               <p className="text-xs text-slate-500">
                 <strong className="text-slate-700">{title}</strong> · {subject} · {lessonTopic}
-                {standard && <> · <span className="font-mono">{standard}</span></>}
+                {standards.length > 0 && (
+                  <> · <span className="font-mono">{standards.map((s) => s.code).join(", ")}</span></>
+                )}
                 {selectedPeriodIds.length > 0 && (
                   <> · {periods.filter((p) => selectedPeriodIds.includes(p.id)).map((p) => p.name).join(", ")}</>
                 )}

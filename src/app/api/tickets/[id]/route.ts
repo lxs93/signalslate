@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { updateTicketSchema } from "@/lib/validations";
-import { createQuestions, ownsPeriods } from "@/lib/tickets";
+import { createQuestions, ownsPeriods, writeTicketStandards } from "@/lib/tickets";
 
 async function getTicketForUser(ticketId: string, userId: string) {
   const ticket = await db.exitTicket.findUnique({
@@ -58,7 +58,7 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { periodIds, questions, standard, ...details } = parsed.data;
+  const { periodIds, questions, standards, ...details } = parsed.data;
 
   if (periodIds && !(await ownsPeriods(session.user.id, periodIds))) {
     return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
@@ -72,11 +72,11 @@ export async function PATCH(
       await tx.question.deleteMany({ where: { exitTicketId: id } });
       await createQuestions(tx, id, questions);
     }
+    if (standards) await writeTicketStandards(tx, id, standards);
     await tx.exitTicket.update({
       where: { id },
       data: {
         ...details,
-        ...(standard !== undefined ? { standard: standard || null } : {}),
         ...(periodIds ? { periods: { set: periodIds.map((pid) => ({ id: pid })) } } : {}),
       },
     });

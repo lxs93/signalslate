@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { createTicketSchema } from "@/lib/validations";
-import { createQuestions, ownsPeriods } from "@/lib/tickets";
+import { createQuestions, ownsPeriods, writeTicketStandards } from "@/lib/tickets";
 
 export async function GET() {
   const session = await auth();
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { title, subject, lessonTopic, standard, periodIds = [], questions } = parsed.data;
+  const { title, subject, lessonTopic, standards = [], periodIds = [], questions } = parsed.data;
 
   if (!(await ownsPeriods(userId, periodIds))) {
     return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
@@ -46,11 +46,11 @@ export async function POST(req: NextRequest) {
         title,
         subject,
         lessonTopic,
-        standard: standard || null,
         periods: { connect: periodIds.map((id) => ({ id })) },
       },
     });
     await createQuestions(tx, created.id, questions);
+    await writeTicketStandards(tx, created.id, standards);
     return created;
   });
 

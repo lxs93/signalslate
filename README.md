@@ -25,10 +25,11 @@ npm run db:migrate
 # Generates the Prisma client automatically
 ```
 
-### 3. Load demo data (optional but recommended for first run)
+### 3. Load standards and demo data
 
 ```bash
-npm run db:seed
+npm run standards:load   # Common Core, NGSS and California standards for the picker
+npm run db:seed          # Demo data (also loads the standards)
 # Creates: demo@signalslate.com / demo1234
 # Creates: Periods 2, 3, 5 (class codes DEMO42, DEMO43, DEMO45), 32 students
 # Creates: 11 exit tickets (ELA, Math, Science), 109 submissions, 10 pre-built analyses
@@ -68,6 +69,7 @@ Open [http://localhost:3000](http://localhost:3000)
 - Questions can be edited until the first student answers; after that only the details and sections can change (duplicate the ticket to change questions)
 - Multiple-choice questions with a correct answer show % correct and the most common wrong answer
 - **Export CSV** gives one row per student, including students who haven't submitted, with a score for marked multiple-choice questions
+- Tag a ticket with up to 6 standards. Search Common Core, NGSS and California standards by code (long forms like `CCSS.MATH.CONTENT.6.RP.A.1` work) or by words, filter by framework and grade, or add a custom code such as a district objective. Standards data: `data/standards` (ASN, © D2L Corporation, CC BY 3.0 US)
 - Turn on **Show students the correct answers** to let students see the answer key on their submitted answers once the ticket is closed
 
 ## Student accounts
@@ -98,6 +100,7 @@ npm test             # Vitest in watch mode (npm run test:run for a single run)
 npm run db:migrate   # Run Prisma migrations + generate client
 npm run db:push      # Push schema without migration history (rapid prototyping)
 npm run db:seed      # Load demo data
+npm run standards:load  # Load data/standards into the standards table
 npm run db:generate  # Regenerate Prisma client only
 ```
 
@@ -108,5 +111,5 @@ Tests live next to the code as `*.test.ts(x)` and run in Node by default. Compon
 1. Push to GitHub
 2. Import repo in Vercel
 3. Set env vars: `DATABASE_URL`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL` (your Vercel URL), `OPENAI_API_KEY`
-4. After first deploy: run `npx prisma migrate deploy` against your Neon DB
+4. After first deploy: run `npx prisma migrate deploy` and `npm run standards:load` against your Neon DB
 5. Optionally run seed: `npm run db:seed` pointed at production DB

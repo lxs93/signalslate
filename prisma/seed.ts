@@ -2,6 +2,8 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
+import { loadStandards } from "./standards";
+import { normalizeQuery } from "../src/lib/standards";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) throw new Error("DATABASE_URL is not set");
@@ -40,13 +42,28 @@ interface TicketSeed {
   title: string;
   subject: string;
   lessonTopic: string;
-  standard?: string;
+  /** Codes as teachers write them, e.g. "CCSS.MATH.CONTENT.6.RP.A.1" or "NGSS 5-PS1-1" */
+  standards?: string[];
   isOpen: boolean;
   daysAgo: number;
   questions: QuestionSeed[];
   /** Full student name → answers. Students left out didn't submit. */
   answers: Record<string, Answer[]>;
   analysis?: AnalysisSeed;
+}
+
+/** Links each code to the official Common Core or NGSS standard, or keeps it as custom text. */
+async function standardTags(codes: string[]) {
+  const tags = [];
+  for (const [i, raw] of codes.entries()) {
+    const framework = /^ngss/i.test(raw) ? "NGSS" : "Common Core";
+    const match = await db.standard.findFirst({
+      where: { framework, code: { equals: normalizeQuery(raw), mode: "insensitive" } },
+      select: { id: true, code: true },
+    });
+    tags.push(match ? { standardId: match.id, code: match.code, orderIndex: i } : { code: raw, orderIndex: i });
+  }
+  return tags;
 }
 
 // ─── Students ────────────────────────────────────────────────────────────────
@@ -128,7 +145,7 @@ const TICKETS: TicketSeed[] = [
     title: "Main Idea Check",
     subject: "ELA",
     lessonTopic: "Identifying main idea vs. supporting details",
-    standard: "CCSS.ELA-LITERACY.RI.5.2",
+    standards: ["CCSS.ELA-LITERACY.RI.5.2"],
     isOpen: false,
     daysAgo: 15,
     questions: [
@@ -193,7 +210,7 @@ const TICKETS: TicketSeed[] = [
     title: "Using Text Evidence",
     subject: "ELA",
     lessonTopic: "Choosing and explaining text evidence to support a claim",
-    standard: "CCSS.ELA-LITERACY.RL.5.1",
+    standards: ["CCSS.ELA-LITERACY.RL.5.1"],
     isOpen: false,
     daysAgo: 9,
     questions: [
@@ -259,7 +276,7 @@ const TICKETS: TicketSeed[] = [
     title: "Intro to Ratios",
     subject: "Math",
     lessonTopic: "Writing and interpreting ratios",
-    standard: "CCSS.MATH.CONTENT.6.RP.A.1",
+    standards: ["CCSS.MATH.CONTENT.6.RP.A.1", "CCSS.MATH.CONTENT.6.RP.A.3"],
     isOpen: false,
     daysAgo: 4,
     questions: [
@@ -317,7 +334,7 @@ const TICKETS: TicketSeed[] = [
     title: "Adding Unlike Fractions",
     subject: "Math",
     lessonTopic: "Adding fractions with unlike denominators",
-    standard: "CCSS.MATH.CONTENT.5.NF.A.1",
+    standards: ["CCSS.MATH.CONTENT.5.NF.A.1"],
     isOpen: true,
     daysAgo: 1,
     questions: [
@@ -373,7 +390,7 @@ const TICKETS: TicketSeed[] = [
     title: "States of Matter",
     subject: "Science",
     lessonTopic: "Particle model of solids, liquids, and gases",
-    standard: "NGSS 5-PS1-1",
+    standards: ["NGSS 5-PS1-1"],
     isOpen: false,
     daysAgo: 11,
     questions: [
@@ -436,7 +453,7 @@ const TICKETS: TicketSeed[] = [
     title: "Equivalent Fractions",
     subject: "Math",
     lessonTopic: "Generating and recognizing equivalent fractions",
-    standard: "CCSS.MATH.CONTENT.4.NF.A.1",
+    standards: ["CCSS.MATH.CONTENT.4.NF.A.1"],
     isOpen: false,
     daysAgo: 6,
     questions: [
@@ -493,7 +510,7 @@ const TICKETS: TicketSeed[] = [
     title: "Character Motivation",
     subject: "ELA",
     lessonTopic: "Inferring why characters act the way they do",
-    standard: "CCSS.ELA-LITERACY.RL.5.3",
+    standards: ["CCSS.ELA-LITERACY.RL.5.3"],
     isOpen: false,
     daysAgo: 2,
     questions: [
@@ -554,7 +571,7 @@ const TICKETS: TicketSeed[] = [
     title: "Decimal Place Value",
     subject: "Math",
     lessonTopic: "Comparing decimals to the hundredths",
-    standard: "CCSS.MATH.CONTENT.5.NBT.A.3",
+    standards: ["CCSS.MATH.CONTENT.5.NBT.A.3"],
     isOpen: true,
     daysAgo: 0,
     questions: [
@@ -581,7 +598,7 @@ const TICKETS: TicketSeed[] = [
     title: "The Water Cycle",
     subject: "Science",
     lessonTopic: "Evaporation, condensation, and precipitation",
-    standard: "NGSS 5-ESS2-1",
+    standards: ["NGSS 5-ESS2-1"],
     isOpen: false,
     daysAgo: 13,
     questions: [
@@ -637,7 +654,7 @@ const TICKETS: TicketSeed[] = [
     title: "Theme vs. Topic",
     subject: "ELA",
     lessonTopic: "Determining the theme of a story",
-    standard: "CCSS.ELA-LITERACY.RL.5.2",
+    standards: ["CCSS.ELA-LITERACY.RL.5.2"],
     isOpen: false,
     daysAgo: 5,
     questions: [
@@ -693,7 +710,7 @@ const TICKETS: TicketSeed[] = [
     title: "Multiplying Fractions",
     subject: "Math",
     lessonTopic: "Multiplying a fraction by a fraction",
-    standard: "CCSS.MATH.CONTENT.5.NF.B.4",
+    standards: ["CCSS.MATH.CONTENT.5.NF.B.4"],
     isOpen: false,
     daysAgo: 1,
     questions: [
@@ -762,6 +779,8 @@ const daysAgo = (days: number, minutes = 0) =>
 async function main() {
   console.log("Seeding database...");
 
+  console.log("Standards loaded:", await loadStandards(db));
+
   // Keep the demo teacher's id stable so signed-in sessions survive a reseed
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
   const user = await db.user.upsert({
@@ -808,10 +827,10 @@ async function main() {
         title: t.title,
         subject: t.subject,
         lessonTopic: t.lessonTopic,
-        standard: t.standard,
         isOpen: t.isOpen,
         createdAt: daysAgo(t.daysAgo, -60),
         periods: { connect: t.periods.map((k) => ({ id: periodIds[k] })) },
+        standards: { create: await standardTags(t.standards ?? []) },
       },
     });
 

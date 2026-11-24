@@ -73,7 +73,6 @@ model ExitTicket {
   title       String
   subject     String
   lessonTopic String        @map("lesson_topic")
-  standard    String?       @map("standard")
   isOpen      Boolean       @default(true) @map("is_open")
   /// Students see the multiple-choice answer key once the ticket is closed.
   revealAnswers Boolean     @default(false) @map("reveal_answers")
@@ -83,8 +82,46 @@ model ExitTicket {
   questions   Question[]
   submissions Submission[]
   analyses    Analysis[]
+  standards   TicketStandard[]
 
   @@map("exit_tickets")
+}
+
+// ─── Standards ───────────────────────────────────────────────────────────────
+
+/// An official standard, loaded from data/standards by `npm run standards:load`.
+model Standard {
+  /// The Achievement Standards Network id
+  id          String           @id
+  /// "Common Core", "NGSS" or "California"
+  framework   String
+  code        String
+  description String           @db.Text
+  /// "6", "K", or a band like "9-12"
+  grade       String
+  subject     String
+  /// Domain and cluster headings, joined with " › "
+  context     String           @db.Text
+  tickets     TicketStandard[]
+
+  @@index([framework, code])
+  @@map("standards")
+}
+
+/// A standard a ticket checks: an official one, or a custom code the teacher typed.
+model TicketStandard {
+  id           String     @id @default(cuid())
+  exitTicketId String     @map("exit_ticket_id")
+  /// Null for a custom code
+  standardId   String?    @map("standard_id")
+  /// The official code, or the custom text
+  code         String
+  orderIndex   Int        @map("order_index")
+  exitTicket   ExitTicket @relation(fields: [exitTicketId], references: [id], onDelete: Cascade)
+  standard     Standard?  @relation(fields: [standardId], references: [id])
+
+  @@index([exitTicketId])
+  @@map("exit_ticket_standards")
 }
 
 model ClassPeriod {
