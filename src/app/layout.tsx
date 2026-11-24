@@ -19,7 +19,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-full bg-slate-50 text-slate-900 font-sans">
+      {/* Extensions like Grammarly add attributes to <body> before React loads */}
+      <body className="min-h-full bg-slate-50 text-slate-900 font-sans" suppressHydrationWarning>
         {children}
       </body>
     </html>
