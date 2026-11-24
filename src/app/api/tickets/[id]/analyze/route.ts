@@ -130,6 +130,10 @@ export async function POST(
         });
       }
 
+      // The new analysis replaces any earlier ones (their checked-in state was
+      // carried over above), so Trends and the Students page count each ticket once.
+      await tx.analysis.deleteMany({ where: { exitTicketId: id, id: { not: created.id } } });
+
       return tx.analysis.findUnique({
         where: { id: created.id },
         include: { themes: true, followUpFlags: true },
