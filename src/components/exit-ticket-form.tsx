@@ -86,7 +86,7 @@ export function ExitTicketForm({ ticket }: { ticket: TicketFormData }) {
     <div className="py-8 px-4">
       <div className="max-w-lg mx-auto">
         <div className="mb-8">
-          <p className="text-xs text-slate-400 uppercase tracking-wide font-medium mb-1">
+          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-1">
             Exit ticket
           </p>
           <h1 className="text-xl font-bold text-slate-900">{ticket.title}</h1>

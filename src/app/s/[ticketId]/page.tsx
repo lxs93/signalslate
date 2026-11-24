@@ -58,7 +58,7 @@ export default async function StudentTicketPage({
   return (
     <div className="min-h-screen bg-white">
       <StudentHeader name={`${student.firstName} ${student.lastName}`.trim()} />
-      {content}
+      <main>{content}</main>
     </div>
   );
 }

@@ -41,7 +41,7 @@ export function AnalysisPanel({ analysis, ticketId }: AnalysisPanelProps) {
               <ul className="space-y-1.5">
                 {strengths.map((s, i) => (
                   <li key={i} className="text-sm text-slate-700 flex gap-2">
-                    <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
+                    <span className="text-emerald-600 mt-0.5 shrink-0" aria-hidden="true">✓</span>
                     {s}
                   </li>
                 ))}
@@ -60,7 +60,7 @@ export function AnalysisPanel({ analysis, ticketId }: AnalysisPanelProps) {
               <ul className="space-y-1.5">
                 {misconceptions.map((m, i) => (
                   <li key={i} className="text-sm text-slate-700 flex gap-2">
-                    <span className="text-amber-500 mt-0.5 shrink-0">!</span>
+                    <span className="text-amber-600 mt-0.5 shrink-0" aria-hidden="true">!</span>
                     {m}
                   </li>
                 ))}
@@ -82,8 +82,13 @@ export function AnalysisPanel({ analysis, ticketId }: AnalysisPanelProps) {
           <CardContent>
             <div className="space-y-3">
               {analysis.followUpFlags.map((flag) => (
-                <div key={flag.id} className={`flex gap-3 ${flag.resolvedAt ? "opacity-60" : ""}`}>
-                  <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0">
+                <div key={flag.id} className="flex gap-3">
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
+                      flag.resolvedAt ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-600"
+                    }`}
+                    aria-hidden="true"
+                  >
                     {flag.studentName.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">

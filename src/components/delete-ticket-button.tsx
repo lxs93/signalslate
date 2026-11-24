@@ -38,7 +38,7 @@ export function DeleteTicketButton({
       size="sm"
       onClick={handleDelete}
       disabled={busy}
-      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+      className="text-red-600 hover:text-red-700 hover:bg-red-50"
     >
       Delete ticket
     </Button>

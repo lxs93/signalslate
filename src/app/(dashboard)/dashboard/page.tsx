@@ -86,7 +86,7 @@ export default async function DashboardPage() {
                               {openCount > 0 && <> · {openCount} open</>}
                             </p>
                           </div>
-                          <span className="text-slate-300 text-sm">→</span>
+                          <span className="text-slate-300 text-sm" aria-hidden="true">→</span>
                         </CardContent>
                       </Card>
                     </Link>

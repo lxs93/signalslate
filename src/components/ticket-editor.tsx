@@ -203,7 +203,7 @@ export function TicketEditor({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="standards">
-                  Standards <span className="text-slate-400 font-normal">(optional)</span>
+                  Standards <span className="text-slate-500 font-normal">(optional)</span>
                 </Label>
                 <StandardsPicker value={standards} onChange={setStandards} max={MAX_TICKET_STANDARDS} />
               </div>
@@ -225,7 +225,7 @@ export function TicketEditor({
               {periods.length > 0 && (
                 <div className="space-y-1.5">
                   <Label>
-                    Section <span className="text-slate-400 font-normal">(optional)</span>
+                    Section <span className="text-slate-500 font-normal">(optional)</span>
                   </Label>
                   <div className="space-y-1.5">
                     {periods.map((p) => (

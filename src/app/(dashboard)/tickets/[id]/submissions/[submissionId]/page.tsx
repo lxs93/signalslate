@@ -115,7 +115,7 @@ export default async function SubmissionDetailPage({
               {!isMultipleChoice && (
                 <div className="bg-slate-50 rounded-md px-3 py-2.5">
                   <p className="text-sm text-slate-800 whitespace-pre-wrap">
-                    {response?.answerText || <span className="text-slate-400 italic">No answer</span>}
+                    {response?.answerText || <span className="text-slate-500 italic">No answer</span>}
                   </p>
                 </div>
               )}
@@ -130,21 +130,21 @@ export default async function SubmissionDetailPage({
                           : "bg-red-50 text-red-800 border border-red-200"
                       }`}
                     >
-                      <span>{isCorrect ? "✓" : "✗"}</span>
+                      <span aria-hidden="true">{isCorrect ? "✓" : "✗"}</span>
                       <span>{selectedOption.optionText}</span>
-                      <span className="ml-auto text-xs opacity-60">
+                      <span className={`ml-auto text-xs ${isCorrect ? "text-emerald-700" : "text-red-700"}`}>
                         {isCorrect ? "Correct" : "Incorrect"}
                       </span>
                     </div>
                   ) : (
-                    <p className="text-sm text-slate-400 italic px-1">No answer</p>
+                    <p className="text-sm text-slate-500 italic px-1">No answer</p>
                   )}
 
                   {!isCorrect && correctOption && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-md text-sm bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <span>✓</span>
+                      <span aria-hidden="true">✓</span>
                       <span>{correctOption.optionText}</span>
-                      <span className="ml-auto text-xs opacity-60">Correct answer</span>
+                      <span className="ml-auto text-xs">Correct answer</span>
                     </div>
                   )}
                 </div>

@@ -162,7 +162,7 @@ export function StandardsPicker({ value, onChange, max = 6 }: StandardsPickerPro
                 type="button"
                 onClick={() => remove(i)}
                 aria-label={`Remove ${tag.code}`}
-                className="rounded px-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                className="rounded px-1 text-slate-500 hover:bg-slate-200 hover:text-slate-700"
               >
                 ×
               </button>
@@ -283,7 +283,7 @@ export function StandardsPicker({ value, onChange, max = 6 }: StandardsPickerPro
           </ul>
         )}
       </div>
-      <p id={`${id}-help`} className="text-xs text-slate-400">
+      <p id={`${id}-help`} className="text-xs text-slate-500">
         Common Core, NGSS and California standards from the Achievement Standards Network (ASN), © D2L
         Corporation,{" "}
         <a

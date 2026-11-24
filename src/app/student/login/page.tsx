@@ -22,9 +22,8 @@ export default async function StudentLoginPage({
   }
 
   return (
-    <StudentLoginForm
-      nextPath={nextPath}
-      initialCode={Array.isArray(code) ? code[0] : code}
-    />
+    <main>
+      <StudentLoginForm nextPath={nextPath} initialCode={Array.isArray(code) ? code[0] : code} />
+    </main>
   );
 }

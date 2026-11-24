@@ -120,7 +120,7 @@ export default async function StudentsPage({
                 <span className="block md:hidden text-xs text-slate-500 mt-0.5">
                   {sections} · {s.submissions.length} answered
                   {s._count.flags > 0 && (
-                    <span className="text-amber-600 font-medium">
+                    <span className="text-amber-700 font-medium">
                       {" "}· {s._count.flags} open flag{s._count.flags !== 1 ? "s" : ""}
                     </span>
                   )}
@@ -128,7 +128,7 @@ export default async function StudentsPage({
                 <span className="hidden md:block text-slate-500 truncate">{sections}</span>
                 <span className="hidden md:block text-right text-slate-700">{s.submissions.length}</span>
                 <span
-                  className={`hidden md:block text-right ${s._count.flags > 0 ? "text-amber-600 font-medium" : "text-slate-400"}`}
+                  className={`hidden md:block text-right ${s._count.flags > 0 ? "text-amber-700 font-medium" : "text-slate-500"}`}
                 >
                   {s._count.flags}
                 </span>

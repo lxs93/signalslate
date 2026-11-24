@@ -94,7 +94,7 @@ export default async function StudentAnswersPage({
                 {answer ? (
                   <p className="text-sm text-slate-700 whitespace-pre-wrap">{answer}</p>
                 ) : (
-                  <p className="text-sm text-slate-400 italic">No answer</p>
+                  <p className="text-sm text-slate-500 italic">No answer</p>
                 )}
                 {key && (
                   <p

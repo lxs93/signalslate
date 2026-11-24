@@ -209,7 +209,7 @@ export default async function TrendsPage({
                               {row.percentCorrect}% <span className="font-normal text-slate-500">correct</span>
                             </p>
                           ) : (
-                            <p className="text-xs text-slate-400">No marked questions</p>
+                            <p className="text-xs text-slate-500">No marked questions</p>
                           )}
                           {row.openFlags > 0 && (
                             <p className="text-xs text-amber-700 mt-0.5">
@@ -324,7 +324,7 @@ export default async function TrendsPage({
                           </div>
                         ))}
                         {entry.count > 3 && (
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-slate-500">
                             +{entry.count - 3} more
                           </p>
                         )}

@@ -45,9 +45,9 @@ export function PeriodSelector({ ticketId, currentPeriodIds, periods }: PeriodSe
         disabled={saving}
         className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-900 transition-colors disabled:opacity-50"
       >
-        <span className="text-slate-400">Section:</span>
+        <span className="text-slate-500">Section:</span>
         <span className="text-slate-700">{label}</span>
-        <span className="text-slate-300">▾</span>
+        <span className="text-slate-500" aria-hidden="true">▾</span>
       </button>
 
       {open && (
@@ -69,7 +69,7 @@ export function PeriodSelector({ ticketId, currentPeriodIds, periods }: PeriodSe
           <div className="border-t border-slate-100 mt-1 pt-1">
             <button
               onClick={() => setOpen(false)}
-              className="w-full text-left px-2 py-1 text-xs text-slate-400 hover:text-slate-600"
+              className="w-full text-left px-2 py-1 text-xs text-slate-500 hover:text-slate-600"
             >
               Done
             </button>

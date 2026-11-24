@@ -222,10 +222,10 @@ export default async function StudentDetailPage({
                           {i + 1}. {q.prompt}
                         </p>
                         <p className="text-sm text-slate-800 mt-0.5 whitespace-pre-wrap">
-                          {answer ?? <span className="italic text-slate-400">No answer</span>}
+                          {answer ?? <span className="italic text-slate-500">No answer</span>}
                           {hasKey && correct !== null && (
                             <span
-                              className={`ml-2 text-xs font-medium ${correct ? "text-emerald-600" : "text-red-500"}`}
+                              className={`ml-2 text-xs font-medium ${correct ? "text-emerald-700" : "text-red-600"}`}
                             >
                               {correct ? "✓ correct" : "✗ incorrect"}
                             </span>

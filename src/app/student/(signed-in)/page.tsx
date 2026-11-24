@@ -100,7 +100,7 @@ export default async function StudentHomePage() {
               <Card key={t.id} className="bg-slate-50">
                 <CardContent className="py-3 px-4">
                   <p className="text-sm text-slate-600">{t.title}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5">
                     {t.subject} · Closed before you answered
                   </p>
                 </CardContent>

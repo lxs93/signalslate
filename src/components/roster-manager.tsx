@@ -141,10 +141,10 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
         </div>
       )}
 
-      {error && <p className="text-xs text-red-500 mb-2">{error}</p>}
+      {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
 
       {students.length === 0 ? (
-        <p className="text-sm text-slate-400 border border-dashed border-slate-200 rounded-lg px-4 py-6 text-center">
+        <p className="text-sm text-slate-500 border border-dashed border-slate-200 rounded-lg px-4 py-6 text-center">
           No students yet. Add your class list so students can sign in.
         </p>
       ) : (
@@ -201,7 +201,7 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-xs text-red-500 hover:text-red-700 hover:bg-red-50"
+                    className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
                     disabled={busy}
                     onClick={() => send(`/api/periods/${periodId}/students/${s.id}`, "DELETE")}
                   >

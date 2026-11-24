@@ -125,7 +125,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                   type="button"
                   onClick={() => moveQuestion(qIndex, -1)}
                   disabled={qIndex === 0}
-                  className="px-1.5 py-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 text-xs"
+                  className="px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 disabled:opacity-30 text-xs"
                   title="Move up"
                 >
                   ↑
@@ -134,7 +134,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                   type="button"
                   onClick={() => moveQuestion(qIndex, 1)}
                   disabled={qIndex === questions.length - 1}
-                  className="px-1.5 py-1 rounded text-slate-400 hover:text-slate-700 disabled:opacity-30 text-xs"
+                  className="px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 disabled:opacity-30 text-xs"
                   title="Move down"
                 >
                   ↓
@@ -142,7 +142,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                 <button
                   type="button"
                   onClick={() => removeQuestion(qIndex)}
-                  className="px-1.5 py-1 rounded text-slate-400 hover:text-red-500 text-xs ml-1"
+                  className="px-1.5 py-1 rounded text-slate-500 hover:text-red-500 text-xs ml-1"
                   title="Remove question"
                 >
                   ✕
@@ -203,7 +203,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                       className={`text-xs px-2 py-1.5 rounded border transition-colors ${
                         opt.isCorrect
                           ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                          : "bg-white text-slate-400 border-slate-200 hover:border-slate-300"
+                          : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
                       }`}
                     >
                       {opt.isCorrect ? "Correct" : "Correct?"}
@@ -212,7 +212,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                       <button
                         type="button"
                         onClick={() => removeOption(qIndex, oIndex)}
-                        className="text-slate-400 hover:text-red-500 text-xs px-1"
+                        className="text-slate-500 hover:text-red-500 text-xs px-1"
                       >
                         ✕
                       </button>

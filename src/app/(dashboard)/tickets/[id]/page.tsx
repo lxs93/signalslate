@@ -330,13 +330,13 @@ export default async function TicketDetailPage({
                 <span className="text-sm font-medium text-slate-900">
                   {sub.studentName}
                   {!sub.studentId && (
-                    <span className="ml-2 text-xs font-normal text-slate-400">no account</span>
+                    <span className="ml-2 text-xs font-normal text-slate-500">no account</span>
                   )}
                 </span>
                 <span className="text-xs text-slate-500 flex items-center gap-2">
                   {sub.feedback && <span className="mr-2 text-sky-700">Note sent</span>}
                   {confidenceLabel(sub.confidence) && (
-                    <span className="mr-2 text-slate-400">{confidenceLabel(sub.confidence)}</span>
+                    <span className="mr-2 text-slate-500">{confidenceLabel(sub.confidence)}</span>
                   )}
                   {new Date(sub.submittedAt).toLocaleTimeString("en-US", {
                     hour: "numeric",
@@ -346,7 +346,7 @@ export default async function TicketDetailPage({
                     month: "short",
                     day: "numeric",
                   })}
-                  <span className="text-slate-300 group-hover:text-slate-500 transition-colors">→</span>
+                  <span className="text-slate-300 group-hover:text-slate-500 transition-colors" aria-hidden="true">→</span>
                 </span>
               </Link>
             ))}
@@ -379,7 +379,7 @@ export default async function TicketDetailPage({
             <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
               Analysis
             </h2>
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-slate-500">
               {new Date(latestAnalysis.createdAt).toLocaleDateString("en-US", {
                 month: "short",
                 day: "numeric",

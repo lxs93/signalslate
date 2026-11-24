@@ -80,7 +80,7 @@ export function PeriodManager({ periods }: PeriodManagerProps) {
           </p>
 
           {periods.length === 0 && (
-            <p className="text-sm text-slate-400 mb-3">No sections yet.</p>
+            <p className="text-sm text-slate-500 mb-3">No sections yet.</p>
           )}
 
           <div className="space-y-1.5 mb-4">
@@ -128,7 +128,7 @@ export function PeriodManager({ periods }: PeriodManagerProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDelete(p.id)}
-                      className={cn("h-7 text-xs text-red-500 hover:text-red-700 hover:bg-red-50")}
+                      className={cn("h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50")}
                     >
                       Delete
                     </Button>
@@ -150,7 +150,7 @@ export function PeriodManager({ periods }: PeriodManagerProps) {
               Add
             </Button>
           </form>
-          {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+          {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
         </div>
       )}
     </div>
