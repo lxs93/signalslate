@@ -86,8 +86,9 @@ Open [http://localhost:3000](http://localhost:3000)
 - A student can be in several of a teacher's sections; each section has its own class code
 - Students only see tickets assigned to their sections and can submit each one once
 - PINs are stored in plain text so teachers can print sign-in sheets (MVP only; see the privacy note below)
+- Wrong PINs are limited per student: after 5 in a row they wait 15 minutes, and after 10 they're locked out until the teacher gives them a **New PIN**. Locked-out students are marked on the class list
 
-> **Privacy note:** this is an MVP. Student data handling (FERPA/COPPA, PIN hashing, rate limiting sign-in attempts, keeping names out of AI prompts) still needs to be addressed before real classroom use.
+> **Privacy note:** this is an MVP. Student data handling (FERPA/COPPA, PIN hashing, keeping names out of AI prompts) still needs to be addressed before real classroom use.
 
 ## Tech stack
 

@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TicketCard, type TicketWithCount } from "@/components/ticket-card";
 import { RosterManager } from "@/components/roster-manager";
 import { byLastName } from "@/lib/names";
+import { pinBlock } from "@/lib/pin-limit";
 
 export default async function PeriodPage({
   params,
@@ -43,6 +44,7 @@ export default async function PeriodPage({
     firstName: s.firstName,
     lastName: s.lastName,
     pin: s.pin,
+    lockedOut: pinBlock(s) !== null,
   });
 
   return (

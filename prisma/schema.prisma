@@ -165,6 +165,10 @@ model Student {
   lastName    String         @map("last_name")
   // Stored in plain text for the MVP so teachers can print sign-in sheets.
   pin         String
+  /// Wrong PINs in a row; a correct PIN or a new PIN resets it (see lib/pin-limit)
+  failedPinAttempts Int      @default(0) @map("failed_pin_attempts")
+  /// Set after every 5 wrong PINs: no more tries until then
+  pinLockedUntil    DateTime? @map("pin_locked_until")
   // Reserved for Google sign-in later
   googleSub   String?        @unique @map("google_sub")
   email       String?

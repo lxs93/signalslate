@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { pinMessage } from "@/lib/pin-limit";
 
 interface ClassInfo {
   joinCode: string;
@@ -78,7 +79,7 @@ export function StudentLoginForm({
     });
     setLoading(false);
     if (result?.error) {
-      setError("That PIN doesn't match. Try again or ask your teacher.");
+      setError(pinMessage(result.code));
       setPin("");
       return;
     }

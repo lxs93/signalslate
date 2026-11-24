@@ -31,7 +31,7 @@ export async function PATCH(
 
   const data =
     "resetPin" in parsed.data
-      ? { pin: generatePin() }
+      ? { pin: generatePin(), failedPinAttempts: 0, pinLockedUntil: null }
       : { firstName: parsed.data.firstName, lastName: parsed.data.lastName };
 
   const updated = await db.student.update({ where: { id }, data });

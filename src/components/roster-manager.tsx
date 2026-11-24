@@ -12,6 +12,8 @@ export interface RosterStudent {
   firstName: string;
   lastName: string;
   pin: string;
+  /** Too many wrong PINs; a new PIN lets them in again */
+  lockedOut?: boolean;
 }
 
 interface RosterManagerProps {
@@ -188,6 +190,11 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
                     {s.firstName} {s.lastName}
                   </Link>
                   <span className="text-xs text-slate-500 shrink-0">
+                    {s.lockedOut && (
+                      <span className="mr-2 rounded bg-amber-50 px-1.5 py-0.5 font-medium text-amber-800">
+                        Locked out · give a new PIN
+                      </span>
+                    )}
                     PIN <span className="font-mono text-slate-800">{s.pin}</span>
                   </span>
                   {/* On phones the actions wrap onto their own line */}

@@ -1,9 +1,18 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { normalizeJoinCode } from "@/lib/codes";
 import { normalizeEmail } from "@/lib/validations";
+import { PIN_TRIES_BEFORE_LOCK, afterWrongPin, pinBlock, type PinBlock } from "@/lib/pin-limit";
+
+/** Tells the sign-in form why a student can't try a PIN (result.code on the client). */
+class PinBlocked extends CredentialsSignin {
+  constructor(block: PinBlock) {
+    super();
+    this.code = `pin_${block}`;
+  }
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -56,9 +65,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             include: { student: true },
           })
           .catch(() => null);
-        if (!enrollment || enrollment.student.pin !== pin) return null;
-
+        if (!enrollment) return null;
         const { student } = enrollment;
+
+        const block = pinBlock(student);
+        if (block) throw new PinBlocked(block);
+
+        // Count the attempt before comparing, in one statement, so guesses sent
+        // at the same moment can't get past the limit
+        const counted = await db.$queryRaw<{ failed_pin_attempts: number }[]>`
+          UPDATE "students" SET "failed_pin_attempts" = "failed_pin_attempts" + 1
+          WHERE "id" = ${student.id}::uuid AND "failed_pin_attempts" < ${PIN_TRIES_BEFORE_LOCK}
+          RETURNING "failed_pin_attempts"`;
+        if (counted.length === 0) throw new PinBlocked("locked");
+
+        if (student.pin !== pin) {
+          const after = afterWrongPin(counted[0].failed_pin_attempts);
+          if (after.lockUntil) {
+            await db.student.update({ where: { id: student.id }, data: { pinLockedUntil: after.lockUntil } });
+          }
+          if (after.block) throw new PinBlocked(after.block);
+          return null;
+        }
+
+        await db.student.update({ where: { id: student.id }, data: { failedPinAttempts: 0, pinLockedUntil: null } });
         return {
           id: student.id,
           name: `${student.firstName} ${student.lastName}`.trim(),
