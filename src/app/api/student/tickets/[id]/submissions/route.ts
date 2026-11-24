@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getStudentId } from "@/lib/session";
 import { getTicketForStudent } from "@/lib/student-tickets";
 import { studentSubmissionSchema } from "@/lib/validations";
+import { checkResponses } from "@/lib/submission-check";
 import { Prisma } from "@/generated/prisma/client";
 import { isOpenNow } from "@/lib/ticket-status";
 import { readJson } from "@/lib/request";
@@ -41,13 +42,12 @@ export async function POST(
     return NextResponse.json({ error: "Please say how sure you are about your answers" }, { status: 400 });
   }
 
-  // Only accept answers to this ticket's questions, using its own options
-  const questionIds = new Set(ticket.questions.map((q) => q.id));
-  const optionIds = new Set(ticket.questions.flatMap((q) => q.options.map((o) => o.id)));
-  const responses = parsed.data.responses.filter((r) => questionIds.has(r.questionId));
-  if (responses.some((r) => r.selectedOptionId && !optionIds.has(r.selectedOptionId))) {
-    return NextResponse.json({ error: "Invalid answer choice" }, { status: 400 });
+  // One answer per question, of the right kind, using that question's own choices
+  const checked = checkResponses(ticket.questions, parsed.data.responses);
+  if (!checked.ok) {
+    return NextResponse.json({ error: checked.error }, { status: 400 });
   }
+  const { responses } = checked;
 
   const student = await db.student.findUnique({ where: { id: studentId } });
   if (!student) {
