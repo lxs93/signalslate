@@ -81,6 +81,10 @@ export async function POST(
     const result = await analyzeExitTicket({ ...ticket, standards }, ticket.submissions);
 
     const analysis = await db.$transaction(async (tx: Prisma.TransactionClient) => {
+      // Runs of the same ticket save one at a time, so each sees (and replaces)
+      // the one before it, even when "Run analysis" is clicked twice
+      await tx.$queryRaw`SELECT id FROM "exit_tickets" WHERE id = ${id} FOR UPDATE`;
+
       const created = await tx.analysis.create({
         data: {
           exitTicketId: id,
