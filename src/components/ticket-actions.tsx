@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
@@ -67,6 +68,9 @@ export function TicketActions({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" asChild>
+          <Link href={`/tickets/${ticketId}/edit`}>Edit</Link>
+        </Button>
         <Button variant="outline" size="sm" onClick={handleCopyLink}>
           {copied ? "Copied!" : "Copy student link"}
         </Button>

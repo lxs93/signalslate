@@ -12,26 +12,41 @@ export const loginSchema = z.object({
 });
 
 export const questionOptionSchema = z.object({
-  optionText: z.string().min(1, "Option text is required"),
+  optionText: z.string().trim().min(1, "Option text is required"),
   orderIndex: z.number(),
   isCorrect: z.boolean().nullable().optional(),
 });
 
-export const questionSchema = z.object({
-  prompt: z.string().min(1, "Question prompt is required"),
-  questionType: z.enum(["SHORT_ANSWER", "MULTIPLE_CHOICE"]),
-  orderIndex: z.number(),
-  options: z.array(questionOptionSchema).optional(),
+export const questionSchema = z
+  .object({
+    prompt: z.string().trim().min(1, "Question prompt is required"),
+    questionType: z.enum(["SHORT_ANSWER", "MULTIPLE_CHOICE"]),
+    orderIndex: z.number(),
+    options: z.array(questionOptionSchema).max(6).optional(),
+  })
+  .refine((q) => q.questionType !== "MULTIPLE_CHOICE" || (q.options?.length ?? 0) >= 2, {
+    message: "Multiple choice questions need at least 2 options",
+  });
+
+export const ticketDetailsSchema = z.object({
+  title: z.string().trim().min(1, "Title is required"),
+  subject: z.string().trim().min(1, "Subject is required"),
+  lessonTopic: z.string().trim().min(1, "Lesson topic is required"),
+  standard: z.string().trim().nullable().optional(),
+  periodIds: z.array(z.string()).optional(),
 });
 
-export const createTicketSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  subject: z.string().min(1, "Subject is required"),
-  lessonTopic: z.string().min(1, "Lesson topic is required"),
-  questions: z
-    .array(questionSchema)
-    .min(2, "At least 2 questions are required")
-    .max(4, "Maximum 4 questions allowed"),
+export const ticketQuestionsSchema = z
+  .array(questionSchema)
+  .min(2, "At least 2 questions are required")
+  .max(4, "Maximum 4 questions allowed");
+
+export const createTicketSchema = ticketDetailsSchema.extend({
+  questions: ticketQuestionsSchema,
+});
+
+export const updateTicketSchema = ticketDetailsSchema.partial().extend({
+  questions: ticketQuestionsSchema.optional(),
 });
 
 export const studentSubmissionSchema = z.object({

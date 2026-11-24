@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
+import { createTicketSchema } from "@/lib/validations";
+import { createQuestions, ownsPeriods } from "@/lib/tickets";
 
 export async function GET() {
   const session = await auth();
@@ -25,75 +27,32 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const userId = session.user.id;
 
-  try {
-    const body = await req.json();
-    const { title, subject, lessonTopic, standard, periodIds, questions } = body;
-
-    if (!title || !subject || !lessonTopic) {
-      return NextResponse.json(
-        { error: "title, subject, and lessonTopic are required" },
-        { status: 400 }
-      );
-    }
-
-    // Verify all periods belong to this teacher
-    if (Array.isArray(periodIds) && periodIds.length > 0) {
-      const periods = await db.classPeriod.findMany({ where: { id: { in: periodIds } } });
-      if (periods.some((p) => p.userId !== session.user.id)) {
-        return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
-      }
-    }
-    if (!questions || questions.length < 2 || questions.length > 4) {
-      return NextResponse.json(
-        { error: "Between 2 and 4 questions are required" },
-        { status: 400 }
-      );
-    }
-
-    const ticket = await db.$transaction(async (tx: Prisma.TransactionClient) => {
-      const created = await tx.exitTicket.create({
-        data: {
-          userId: session.user!.id!,
-          title,
-          subject,
-          lessonTopic,
-          standard: standard || null,
-          periods: Array.isArray(periodIds) && periodIds.length > 0
-            ? { connect: periodIds.map((pid: string) => ({ id: pid })) }
-            : undefined,
-        },
-      });
-
-      for (const q of questions) {
-        const question = await tx.question.create({
-          data: {
-            exitTicketId: created.id,
-            prompt: q.prompt,
-            questionType: q.questionType,
-            orderIndex: q.orderIndex,
-          },
-        });
-
-        if (q.questionType === "MULTIPLE_CHOICE" && q.options?.length > 0) {
-          await tx.questionOption.createMany({
-            data: q.options.map(
-              (o: { optionText: string; orderIndex: number; isCorrect?: boolean | null }) => ({
-                questionId: question.id,
-                optionText: o.optionText,
-                orderIndex: o.orderIndex,
-                isCorrect: o.isCorrect ?? null,
-              })
-            ),
-          });
-        }
-      }
-
-      return created;
-    });
-
-    return NextResponse.json(ticket, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  const parsed = createTicketSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
+  const { title, subject, lessonTopic, standard, periodIds = [], questions } = parsed.data;
+
+  if (!(await ownsPeriods(userId, periodIds))) {
+    return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
+  }
+
+  const ticket = await db.$transaction(async (tx: Prisma.TransactionClient) => {
+    const created = await tx.exitTicket.create({
+      data: {
+        userId,
+        title,
+        subject,
+        lessonTopic,
+        standard: standard || null,
+        periods: { connect: periodIds.map((id) => ({ id })) },
+      },
+    });
+    await createQuestions(tx, created.id, questions);
+    return created;
+  });
+
+  return NextResponse.json(ticket, { status: 201 });
 }
