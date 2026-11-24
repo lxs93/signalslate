@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { registerSchema } from "@/lib/validations";
+import { readJson } from "@/lib/request";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const parsed = registerSchema.safeParse(body);
+    const parsed = registerSchema.safeParse(await readJson(req));
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0].message },

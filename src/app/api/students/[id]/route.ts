@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getTeacherId } from "@/lib/session";
 import { generatePin } from "@/lib/codes";
 import { updateStudentSchema } from "@/lib/validations";
+import { readJson } from "@/lib/request";
 
 async function findOwnStudent(id: string, teacherId: string) {
   const student = await db.student.findUnique({ where: { id } }).catch(() => null);
@@ -23,7 +24,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const parsed = updateStudentSchema.safeParse(await req.json());
+  const parsed = updateStudentSchema.safeParse(await readJson(req));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }

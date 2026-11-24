@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { readJson } from "@/lib/request";
 
 export async function PATCH(
   req: Request,
@@ -17,8 +18,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const { name } = await req.json();
-  if (!name?.trim()) {
+  const body = (await readJson(req)) as { name?: unknown } | null;
+  const name = typeof body?.name === "string" ? body.name : "";
+  if (!name.trim()) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 

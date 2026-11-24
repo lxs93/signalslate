@@ -5,6 +5,7 @@ import { getTicketForStudent } from "@/lib/student-tickets";
 import { studentSubmissionSchema } from "@/lib/validations";
 import { Prisma } from "@/generated/prisma/client";
 import { isOpenNow } from "@/lib/ticket-status";
+import { readJson } from "@/lib/request";
 
 export async function POST(
   req: NextRequest,
@@ -30,7 +31,7 @@ export async function POST(
     return NextResponse.json({ error: "You already submitted this exit ticket" }, { status: 409 });
   }
 
-  const parsed = studentSubmissionSchema.safeParse(await req.json());
+  const parsed = studentSubmissionSchema.safeParse(await readJson(req));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }

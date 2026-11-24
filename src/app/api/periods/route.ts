@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { generateJoinCode } from "@/lib/codes";
+import { readJson } from "@/lib/request";
 
 export async function GET() {
   const session = await auth();
@@ -23,8 +24,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const name = body.name?.trim();
+  const body = (await readJson(req)) as { name?: unknown } | null;
+  const name = typeof body?.name === "string" ? body.name.trim() : "";
   if (!name) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }

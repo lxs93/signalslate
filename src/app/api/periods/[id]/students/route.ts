@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getTeacherId } from "@/lib/session";
 import { generatePin } from "@/lib/codes";
 import { addStudentsSchema, parseStudentNames } from "@/lib/validations";
+import { readJson } from "@/lib/request";
 
 /** Add new students (pasted names) or enroll an existing student in this period. */
 export async function POST(
@@ -20,7 +21,7 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const parsed = addStudentsSchema.safeParse(await req.json());
+  const parsed = addStudentsSchema.safeParse(await readJson(req));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
