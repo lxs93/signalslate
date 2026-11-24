@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { AnalysisPanel } from "@/components/analysis-panel";
 import { TicketActions } from "@/components/ticket-actions";
 import { PeriodSelector } from "@/components/period-selector";
+import { DeleteTicketButton } from "@/components/delete-ticket-button";
 import type { Question, QuestionOption, Submission } from "@/generated/prisma/client";
 
 export default async function TicketDetailPage({
@@ -244,6 +245,15 @@ export default async function TicketDetailPage({
           </CardContent>
         </Card>
       )}
+
+      <Separator className="my-8" />
+      <div className="flex justify-end">
+        <DeleteTicketButton
+          ticketId={ticket.id}
+          title={ticket.title}
+          submissionCount={ticket._count.submissions}
+        />
+      </div>
     </div>
   );
 }
