@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   const { title, subject, lessonTopic, standards = [], periodIds = [], questions, askConfidence = true } = parsed.data;
 
   if (!(await ownsPeriods(userId, periodIds))) {
-    return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid section" }, { status: 400 });
   }
 
   const ticket = await db.$transaction(async (tx: Prisma.TransactionClient) => {

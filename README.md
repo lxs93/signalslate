@@ -32,7 +32,7 @@ npm run standards:load   # Common Core, NGSS and California standards for the pi
 npm run db:seed          # Demo data (also loads the standards)
 # Creates: demo@signalslate.com / demo1234
 # Creates: Periods 2, 3, 5 (class codes DEMO42, DEMO43, DEMO45), 32 students
-# Creates: 11 exit tickets (ELA, Math, Science; one taught in two periods), 115 submissions, 10 pre-built analyses
+# Creates: 11 exit tickets (ELA, Math, Science; one taught in two sections), 115 submissions, 10 pre-built analyses
 ```
 
 ### 4. Start the dev server
@@ -73,7 +73,7 @@ Open [http://localhost:3000](http://localhost:3000)
 - Turn on **Show students the correct answers** to let students see the answer key on their submitted answers once the ticket is closed
 - **Live count** while a ticket is open ("8 of 12 students in"); the page refreshes itself every 10 seconds
 - **Close automatically at** a set time; closing or reopening by hand clears it
-- Tickets taught in **several periods** get period tabs, and each marked multiple-choice question shows % correct by period
+- Tickets taught in **several sections** get section tabs, and each marked multiple-choice question shows % correct by section
 - **Read answers by question**: every short answer side by side, and multiple-choice answers grouped by the choice picked
 - **How sure are you?** (on by default for new tickets): students rate 1–4; the ticket shows who was confident but wrong, and the analysis is told each student's confidence
 - **Notes to students**: write a short note on any submission (with previous/next student links); the student sees it with their answers

@@ -82,9 +82,9 @@ export default async function PeriodPage({
       {tickets.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-slate-600 font-medium">No tickets in this period yet</p>
+            <p className="text-slate-600 font-medium">No tickets in this section yet</p>
             <p className="text-sm text-slate-500 mt-1 mb-6">
-              Create a ticket and assign it to this period
+              Create a ticket and assign it to this section
             </p>
             <Button asChild>
               <Link href="/tickets/new">Create exit ticket</Link>

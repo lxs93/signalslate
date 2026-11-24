@@ -216,8 +216,8 @@ export default async function TicketDetailPage({
       </div>
 
       {multiPeriod && (
-        <nav aria-label="Period" className="mb-4 flex flex-wrap items-center gap-1.5">
-          {[{ id: "", name: "All periods" }, ...ticket.periods].map((p) => {
+        <nav aria-label="Section" className="mb-4 flex flex-wrap items-center gap-1.5">
+          {[{ id: "", name: "All sections" }, ...ticket.periods].map((p) => {
             const current = (activePeriod?.id ?? "") === p.id;
             return (
               <Link
@@ -450,7 +450,7 @@ function PeriodScores({ scores }: { scores: PeriodScore[] }) {
   const high = Math.max(...answered.map((s) => s.percent!));
   return (
     <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-slate-100 pt-2 text-xs text-slate-500">
-      <span className="font-medium text-slate-600">By period:</span>
+      <span className="font-medium text-slate-600">By section:</span>
       {answered.map((s) => (
         <span key={s.periodId}>
           {s.name}{" "}

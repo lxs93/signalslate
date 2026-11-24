@@ -61,7 +61,7 @@ export async function PATCH(
   const { periodIds, questions, standards, closesAt, ...details } = parsed.data;
 
   if (periodIds && !(await ownsPeriods(session.user.id, periodIds))) {
-    return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid section" }, { status: 400 });
   }
 
   const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
