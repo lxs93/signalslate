@@ -16,7 +16,8 @@ export async function POST(req: NextRequest) {
 
     const { name, email, password } = parsed.data;
 
-    const existing = await db.user.findUnique({ where: { email } });
+    // Accounts made before emails were stored in lowercase may have capitals
+    const existing = await db.user.findFirst({ where: { email: { equals: email, mode: "insensitive" } } });
     if (existing) {
       return NextResponse.json(
         { error: "An account with this email already exists" },

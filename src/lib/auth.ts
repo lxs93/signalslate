@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { normalizeJoinCode } from "@/lib/codes";
+import { normalizeEmail } from "@/lib/validations";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -19,8 +20,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await db.user.findUnique({
-          where: { email: credentials.email as string },
+        // Case-insensitive, so "Ana@School.org" and "ana@school.org" are the same teacher
+        const user = await db.user.findFirst({
+          where: { email: { equals: normalizeEmail(String(credentials.email)), mode: "insensitive" } },
         });
         if (!user) return null;
 

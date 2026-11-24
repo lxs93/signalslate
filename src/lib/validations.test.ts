@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkStudentNames, createTicketSchema, parseStudentNames, sectionSchema, studentSubmissionSchema, submissionFeedbackSchema, updateTicketSchema } from "./validations";
+import { checkStudentNames, createTicketSchema, registerSchema, parseStudentNames, sectionSchema, studentSubmissionSchema, submissionFeedbackSchema, updateTicketSchema } from "./validations";
 
 describe("parseStudentNames", () => {
   it("reads First Last, Last, First, and single names", () => {
@@ -146,5 +146,15 @@ describe("studentSubmissionSchema", () => {
   it("rejects an unreasonable number of answers", () => {
     const many = { responses: Array.from({ length: 11 }, (_, i) => ({ questionId: `q${i}`, answerText: "x" })) };
     expect(studentSubmissionSchema.safeParse(many).success).toBe(false);
+  });
+});
+
+describe("registerSchema email", () => {
+  it("stores emails trimmed and in lowercase", () => {
+    expect(registerSchema.parse({ name: "Ana", email: "  Ana@School.ORG ", password: "12345678" }).email).toBe("ana@school.org");
+  });
+
+  it("still rejects things that aren't emails", () => {
+    expect(registerSchema.safeParse({ name: "Ana", email: "ana at school", password: "12345678" }).success).toBe(false);
   });
 });
