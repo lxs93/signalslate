@@ -74,6 +74,13 @@ export function TicketActions({
         <Button variant="outline" size="sm" asChild>
           <Link href={`/tickets/new?from=${ticketId}`}>Duplicate</Link>
         </Button>
+        {submissionCount > 0 && (
+          <Button variant="outline" size="sm" asChild>
+            <a href={`/api/tickets/${ticketId}/export`} download>
+              Export CSV
+            </a>
+          </Button>
+        )}
         <Button variant="outline" size="sm" onClick={handleCopyLink}>
           {copied ? "Copied!" : "Copy student link"}
         </Button>
