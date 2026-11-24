@@ -47,8 +47,8 @@ Open [http://localhost:3000](http://localhost:3000)
 **As the teacher**
 1. Log in at `/login` as `demo@signalslate.com` / `demo1234`
 2. Open a period (e.g. **Period 2**) to see the class code, the class list with PINs, and the printable sign-in sheet
-3. Open an exit ticket to see responses, who hasn't submitted, and the analysis
-4. Open **Students** to see each student's answers and follow-up flags
+3. Open an exit ticket to see responses, multiple-choice results, who hasn't submitted, and the analysis. From there you can edit, duplicate, delete, or export it as CSV
+4. Open **Students** to see each student's answers and follow-up flags. Mark flags as checked in, or filter to **Needs check-in**
 5. Open **Trends** to see recurring misconception themes
 
 **As a student** (use a private window so both sessions stay signed in)
@@ -62,6 +62,13 @@ Open [http://localhost:3000](http://localhost:3000)
 3. Students sign in at `/student/login` with the class code, their name, and their PIN, and answer from their home page (or follow the student link you copy from the ticket)
 4. Return to the ticket → Run Analysis (needs 3+ submissions)
 5. View class summary, misconceptions, and students to check in with
+
+## Exit tickets
+
+- Questions can be edited until the first student answers; after that only the details and sections can change (duplicate the ticket to change questions)
+- Multiple-choice questions with a correct answer show % correct and the most common wrong answer
+- **Export CSV** gives one row per student, including students who haven't submitted, with a score for marked multiple-choice questions
+- Turn on **Show students the correct answers** to let students see the answer key on their submitted answers once the ticket is closed
 
 ## Student accounts
 
