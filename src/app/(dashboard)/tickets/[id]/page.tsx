@@ -195,9 +195,16 @@ export default async function TicketDetailPage({
 
       {/* Submissions */}
       <section className="mb-8">
-        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
-          Responses ({ticket._count.submissions})
-        </h2>
+        <div className="flex items-baseline justify-between gap-4 mb-3">
+          <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+            Responses ({ticket._count.submissions})
+          </h2>
+          {ticket._count.submissions > 0 && (
+            <Link href={`/tickets/${ticket.id}/answers`} className="text-sm font-medium text-slate-700 hover:text-slate-900 hover:underline">
+              Read answers by question →
+            </Link>
+          )}
+        </div>
         {ticket.submissions.length === 0 ? (
           <p className="text-sm text-slate-500">
             No responses yet. Students answer from their SignalSlate home page, or you can share the student link.
