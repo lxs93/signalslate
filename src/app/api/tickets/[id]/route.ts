@@ -58,7 +58,7 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { periodIds, questions, standards, ...details } = parsed.data;
+  const { periodIds, questions, standards, closesAt, ...details } = parsed.data;
 
   if (periodIds && !(await ownsPeriods(session.user.id, periodIds))) {
     return NextResponse.json({ error: "Invalid class period" }, { status: 400 });
@@ -77,6 +77,7 @@ export async function PATCH(
       where: { id },
       data: {
         ...details,
+        ...(closesAt !== undefined ? { closesAt: closesAt ? new Date(closesAt) : null } : {}),
         ...(periodIds ? { periods: { set: periodIds.map((pid) => ({ id: pid })) } } : {}),
       },
     });

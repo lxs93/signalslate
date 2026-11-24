@@ -74,6 +74,8 @@ model ExitTicket {
   subject     String
   lessonTopic String        @map("lesson_topic")
   isOpen      Boolean       @default(true) @map("is_open")
+  /// When set, the ticket stops taking answers at this time (see isOpenNow).
+  closesAt    DateTime?     @map("closes_at")
   /// Students see the multiple-choice answer key once the ticket is closed.
   revealAnswers Boolean     @default(false) @map("reveal_answers")
   createdAt   DateTime      @default(now()) @map("created_at")

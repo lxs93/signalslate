@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteStudentButton } from "@/components/delete-student-button";
 import { FlagCheckInButton } from "@/components/flag-check-in-button";
+import { isOpenNow } from "@/lib/ticket-status";
 
 const shortDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
@@ -63,7 +64,7 @@ export default async function StudentDetailPage({
       id: { notIn: submittedIds },
     },
     orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, isOpen: true, createdAt: true },
+    select: { id: true, title: true, isOpen: true, closesAt: true, createdAt: true },
   });
 
   return (
@@ -179,7 +180,7 @@ export default async function StudentDetailPage({
               >
                 <span className="text-sm text-slate-800">{t.title}</span>
                 <span className="text-xs text-slate-500">
-                  {t.isOpen ? "Open" : "Closed"} · {shortDate(t.createdAt)}
+                  {isOpenNow(t) ? "Open" : "Closed"} · {shortDate(t.createdAt)}
                 </span>
               </Link>
             ))}

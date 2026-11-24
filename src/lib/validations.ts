@@ -58,6 +58,8 @@ export const createTicketSchema = ticketDetailsSchema.extend({
 export const updateTicketSchema = ticketDetailsSchema.partial().extend({
   questions: ticketQuestionsSchema.optional(),
   revealAnswers: z.boolean().optional(),
+  /** When the ticket stops taking answers; null clears it */
+  closesAt: z.iso.datetime({ offset: true }).nullable().optional(),
 });
 
 export const studentSubmissionSchema = z.object({

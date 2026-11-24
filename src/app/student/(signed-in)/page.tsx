@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { getStudentId } from "@/lib/session";
 import { Card, CardContent } from "@/components/ui/card";
+import { isOpenNow } from "@/lib/ticket-status";
 
 export default async function StudentHomePage() {
   const studentId = (await getStudentId())!;
@@ -19,9 +20,9 @@ export default async function StudentHomePage() {
     },
   });
 
-  const todo = tickets.filter((t) => t.isOpen && t.submissions.length === 0);
+  const todo = tickets.filter((t) => isOpenNow(t) && t.submissions.length === 0);
   const done = tickets.filter((t) => t.submissions.length > 0);
-  const missed = tickets.filter((t) => !t.isOpen && t.submissions.length === 0);
+  const missed = tickets.filter((t) => !isOpenNow(t) && t.submissions.length === 0);
 
   return (
     <div className="space-y-8">
@@ -74,7 +75,7 @@ export default async function StudentHomePage() {
                       </p>
                     </div>
                     <span className="text-xs text-slate-500 shrink-0 ml-3">
-                      {t.revealAnswers && !t.isOpen ? (
+                      {t.revealAnswers && !isOpenNow(t) ? (
                         <span className="text-emerald-700 font-medium">See correct answers →</span>
                       ) : (
                         "View answers →"

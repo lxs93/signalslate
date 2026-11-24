@@ -6,10 +6,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PeriodManager } from "@/components/period-manager";
 import { TicketCard, type TicketWithCount } from "@/components/ticket-card";
 import type { ClassPeriod } from "@/generated/prisma/client";
+import { isOpenNow } from "@/lib/ticket-status";
 
 type PeriodWithCounts = ClassPeriod & {
   _count: { exitTickets: number };
-  exitTickets: { isOpen: boolean }[];
+  exitTickets: { isOpen: boolean; closesAt: Date | null }[];
 };
 
 export default async function DashboardPage() {
@@ -21,7 +22,7 @@ export default async function DashboardPage() {
     orderBy: { createdAt: "asc" },
     include: {
       _count: { select: { exitTickets: true } },
-      exitTickets: { select: { isOpen: true } },
+      exitTickets: { select: { isOpen: true, closesAt: true } },
     },
   });
 
@@ -73,7 +74,7 @@ export default async function DashboardPage() {
               </p>
               <div className="space-y-2.5">
                 {periods.map((period: PeriodWithCounts) => {
-                  const openCount = period.exitTickets.filter((t) => t.isOpen).length;
+                  const openCount = period.exitTickets.filter((t) => isOpenNow(t)).length;
                   return (
                     <Link key={period.id} href={`/periods/${period.id}`} className="block">
                       <Card className="hover:border-slate-300 transition-colors cursor-pointer">

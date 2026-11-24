@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ExitTicket } from "@/generated/prisma/client";
+import { isOpenNow } from "@/lib/ticket-status";
 
 export type TicketWithCount = ExitTicket & {
   _count: { submissions: number; analyses: number };
@@ -21,8 +22,8 @@ export function TicketCard({ ticket }: { ticket: TicketWithCount }) {
               </p>
             </div>
             <span className="flex items-center gap-1.5 shrink-0 text-xs text-slate-500">
-              <span className={`w-1.5 h-1.5 rounded-full ${ticket.isOpen ? "bg-emerald-500" : "bg-slate-300"}`} />
-              {ticket.isOpen ? "Open" : "Closed"}
+              <span className={`w-1.5 h-1.5 rounded-full ${isOpenNow(ticket) ? "bg-emerald-500" : "bg-slate-300"}`} />
+              {isOpenNow(ticket) ? "Open" : "Closed"}
             </span>
           </div>
         </CardHeader>

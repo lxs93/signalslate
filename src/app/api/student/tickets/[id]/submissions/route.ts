@@ -4,6 +4,7 @@ import { getStudentId } from "@/lib/session";
 import { getTicketForStudent } from "@/lib/student-tickets";
 import { studentSubmissionSchema } from "@/lib/validations";
 import { Prisma } from "@/generated/prisma/client";
+import { isOpenNow } from "@/lib/ticket-status";
 
 export async function POST(
   req: NextRequest,
@@ -19,7 +20,7 @@ export async function POST(
   if (!ticket) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (!ticket.isOpen) {
+  if (!isOpenNow(ticket)) {
     return NextResponse.json(
       { error: "This exit ticket is no longer accepting submissions" },
       { status: 403 }

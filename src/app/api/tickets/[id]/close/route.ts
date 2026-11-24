@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isOpenNow } from "@/lib/ticket-status";
 
 export async function POST(
   _req: NextRequest,
@@ -17,9 +18,10 @@ export async function POST(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
+  // Closing or reopening by hand replaces any scheduled close time
   const updated = await db.exitTicket.update({
     where: { id },
-    data: { isOpen: !ticket.isOpen },
+    data: { isOpen: !isOpenNow(ticket), closesAt: null },
   });
 
   return NextResponse.json({ isOpen: updated.isOpen });

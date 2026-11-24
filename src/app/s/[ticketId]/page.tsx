@@ -4,6 +4,7 @@ import { getCurrentStudent } from "@/lib/session";
 import { getTicketForStudent } from "@/lib/student-tickets";
 import { StudentHeader } from "@/components/student-header";
 import { ExitTicketForm } from "@/components/exit-ticket-form";
+import { isOpenNow } from "@/lib/ticket-status";
 
 function Message({ title, body }: { title: string; body: string }) {
   return (
@@ -43,7 +44,7 @@ export default async function StudentTicketPage({
         body="This exit ticket isn't assigned to any of your classes. Check the link with your teacher."
       />
     );
-  } else if (!ticket.isOpen) {
+  } else if (!isOpenNow(ticket)) {
     content = (
       <Message
         title="Submissions are closed"

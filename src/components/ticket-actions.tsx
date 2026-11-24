@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { formatCloseTime, nextTimeAt } from "@/lib/ticket-status";
 
 interface TicketActionsProps {
   ticketId: string;
   isOpen: boolean;
+  /** ISO time the ticket closes on its own, if set */
+  closesAt: string | null;
   submissionCount: number;
   hasNewSubmissions: boolean;
   hasAnalysis: boolean;
@@ -18,6 +21,7 @@ interface TicketActionsProps {
 export function TicketActions({
   ticketId,
   isOpen,
+  closesAt,
   submissionCount,
   hasNewSubmissions,
   hasAnalysis,
@@ -28,6 +32,13 @@ export function TicketActions({
   const [toggling, setToggling] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [closeTime, setCloseTime] = useState("");
+  // Formatted in the browser so it's in the teacher's time zone, not the server's
+  const closesAtLabel = useSyncExternalStore(
+    noSubscribe,
+    () => (closesAt ? formatCloseTime(new Date(closesAt)) : ""),
+    () => ""
+  );
 
   async function handleAnalyze() {
     setError("");
@@ -71,6 +82,33 @@ export function TicketActions({
     }
   }
 
+  async function saveCloseTime(at: Date | null) {
+    setError("");
+    setToggling(true);
+    try {
+      const res = await fetch(`/api/tickets/${ticketId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ closesAt: at ? at.toISOString() : null }),
+      });
+      if (!res.ok) setError("Couldn't save the close time. Please try again.");
+      setCloseTime("");
+      router.refresh();
+    } finally {
+      setToggling(false);
+    }
+  }
+
+  function handleSetCloseTime(e: React.FormEvent) {
+    e.preventDefault();
+    const at = nextTimeAt(closeTime);
+    if (!at) {
+      setError("Pick a time to close at.");
+      return;
+    }
+    saveCloseTime(at);
+  }
+
   function handleCopyLink() {
     const url = `${window.location.origin}/s/${ticketId}`;
     navigator.clipboard.writeText(url).then(() => {
@@ -110,6 +148,38 @@ export function TicketActions({
           {toggling ? "Updating…" : isOpen ? "Close submissions" : "Reopen submissions"}
         </Button>
       </div>
+
+      {isOpen &&
+        (closesAt ? (
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-700">
+            <span>
+              Closes automatically at{" "}
+              <strong className="font-medium">{closesAtLabel}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={() => saveCloseTime(null)}
+              disabled={toggling}
+              className="text-xs text-slate-500 underline hover:text-slate-900"
+            >
+              Don&apos;t close automatically
+            </button>
+          </p>
+        ) : (
+          <form onSubmit={handleSetCloseTime} className="flex flex-wrap items-center gap-2 text-sm text-slate-700">
+            <label htmlFor="close-time">Close automatically at</label>
+            <input
+              id="close-time"
+              type="time"
+              value={closeTime}
+              onChange={(e) => setCloseTime(e.target.value)}
+              className="h-8 rounded-md border border-slate-200 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            />
+            <Button type="submit" variant="outline" size="sm" disabled={!closeTime || toggling}>
+              Set
+            </Button>
+          </form>
+        ))}
 
       {revealAnswers !== null && (
         <label className="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
@@ -183,3 +253,5 @@ export function TicketActions({
     </div>
   );
 }
+
+const noSubscribe = () => () => {};

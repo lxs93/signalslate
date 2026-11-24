@@ -51,3 +51,15 @@ describe("updateTicketSchema", () => {
     expect(updateTicketSchema.safeParse({ revealAnswers: true }).success).toBe(true);
   });
 });
+
+describe("updateTicketSchema closesAt", () => {
+  it("takes an ISO time or null", () => {
+    expect(updateTicketSchema.safeParse({ closesAt: "2026-11-24T22:45:00.000Z" }).success).toBe(true);
+    expect(updateTicketSchema.safeParse({ closesAt: "2026-11-24T14:45:00-08:00" }).success).toBe(true);
+    expect(updateTicketSchema.safeParse({ closesAt: null }).success).toBe(true);
+  });
+
+  it("rejects anything else", () => {
+    expect(updateTicketSchema.safeParse({ closesAt: "2:45 PM" }).success).toBe(false);
+  });
+});

@@ -17,6 +17,7 @@ export interface TicketWithCounts {
   subject: string;
   lessonTopic: string;
   isOpen: boolean;
+  closesAt: Date | null;
   createdAt: Date;
   _count: { submissions: number; analyses: number };
 }

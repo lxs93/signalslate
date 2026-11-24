@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AnalysisPanel } from "@/components/analysis-panel";
 import { LiveRefresh } from "@/components/live-refresh";
+import { isOpenNow } from "@/lib/ticket-status";
 import { TicketActions } from "@/components/ticket-actions";
 import { PeriodSelector } from "@/components/period-selector";
 import { DeleteTicketButton } from "@/components/delete-ticket-button";
@@ -126,6 +127,7 @@ export default async function TicketDetailPage({
     optionCounts.map((r) => [r.selectedOptionId as string, r._count._all])
   );
 
+  const openNow = isOpenNow(ticket);
   const latestAnalysis = ticket.analyses[0] ?? null;
   const latestSubmission = ticket.submissions[0] ?? null;
   const hasNewSubmissions =
@@ -166,8 +168,8 @@ export default async function TicketDetailPage({
           )}
         </div>
         <span className="flex items-center gap-1.5 shrink-0 mt-1 text-sm text-slate-500">
-          <span className={`w-1.5 h-1.5 rounded-full ${ticket.isOpen ? "bg-emerald-500" : "bg-slate-300"}`} />
-          {ticket.isOpen ? "Open" : "Closed"}
+          <span className={`w-1.5 h-1.5 rounded-full ${openNow ? "bg-emerald-500" : "bg-slate-300"}`} />
+          {openNow ? "Open" : "Closed"}
         </span>
       </div>
 
@@ -207,18 +209,19 @@ export default async function TicketDetailPage({
           })}
         </nav>
       )}
-      {(ticket.isOpen || notSubmitted.length > 0) && ticket.periods.length > 0 && (
+      {(openNow || notSubmitted.length > 0) && ticket.periods.length > 0 && (
         <SubmissionProgress
           submitted={shownSubmissions.length}
           expected={shownSubmissions.length + notSubmitted.length}
-          live={ticket.isOpen}
+          live={openNow}
         />
       )}
-      {ticket.isOpen && <LiveRefresh />}
+      {openNow && <LiveRefresh />}
 
       <TicketActions
         ticketId={ticket.id}
-        isOpen={ticket.isOpen}
+        isOpen={openNow}
+        closesAt={openNow && ticket.closesAt ? ticket.closesAt.toISOString() : null}
         submissionCount={ticket._count.submissions}
         hasNewSubmissions={hasNewSubmissions}
         hasAnalysis={!!latestAnalysis}

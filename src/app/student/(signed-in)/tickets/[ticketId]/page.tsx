@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { getStudentId } from "@/lib/session";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { isOpenNow } from "@/lib/ticket-status";
 
 export default async function StudentAnswersPage({
   params,
@@ -37,7 +38,7 @@ export default async function StudentAnswersPage({
   };
 
   // The answer key is only shown once the teacher closes the ticket and turns it on.
-  const showKey = ticket.revealAnswers && !ticket.isOpen;
+  const showKey = ticket.revealAnswers && !isOpenNow(ticket);
   const keyFor = (q: (typeof ticket.questions)[number]) => {
     if (!showKey || q.questionType !== "MULTIPLE_CHOICE") return null;
     const correct = q.options.find((o) => o.isCorrect);
@@ -64,7 +65,7 @@ export default async function StudentAnswersPage({
         </p>
       </div>
 
-      {ticket.revealAnswers && ticket.isOpen && (
+      {ticket.revealAnswers && isOpenNow(ticket) && (
         <p className="text-sm text-slate-500 mb-4">
           Your teacher will show the correct answers after this ticket closes.
         </p>
