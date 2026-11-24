@@ -1,10 +1,29 @@
 import type { QuestionWithOptions, SubmissionWithResponses } from "@/types";
 
-interface TicketContext {
+/** A standard the ticket checks. Official ones carry a framework and description. */
+export interface PromptStandard {
+  code: string;
+  framework?: string | null;
+  description?: string | null;
+}
+
+export interface TicketContext {
   title: string;
   subject: string;
   lessonTopic: string;
   questions: QuestionWithOptions[];
+  standards?: PromptStandard[];
+}
+
+/** One line per standard, e.g. "- Common Core 6.RP.A.1: Understand the concept of a ratio…" */
+export function formatStandards(standards: PromptStandard[]): string {
+  return standards
+    .map((s) =>
+      s.framework
+        ? `- ${s.framework} ${s.code}: ${s.description ?? ""}`.trimEnd()
+        : `- ${s.code} (the teacher's own code)`
+    )
+    .join("\n");
 }
 
 export const ANALYSIS_SYSTEM_PROMPT = `You are an expert K-12 instructional coach analyzing student exit ticket responses.
@@ -12,7 +31,8 @@ Your job is to help teachers quickly understand what their class learned and whe
 Be specific, concise, and actionable. Reference student names only in the students_to_check_in_with field.
 Use lowercase, 2-3 word theme_tags (e.g. "fraction operations", "main idea", "text evidence").
 Frame student follow-up flags as supportive signals for the teacher, not judgments about students.
-Never label a student as failing, at risk, or struggling — use neutral observational language.`;
+Never label a student as failing, at risk, or struggling — use neutral observational language.
+When the ticket lists the standards it checks, judge understanding against what those standards ask, and say which part of a standard a misconception or reteach suggestion is about.`;
 
 export function buildAnalysisPrompt(
   ticket: TicketContext,
@@ -54,6 +74,7 @@ export function buildAnalysisPrompt(
   return `Exit Ticket: "${ticket.title}"
 Subject: ${ticket.subject}
 Lesson Topic: ${ticket.lessonTopic}
+${ticket.standards?.length ? `\nSTANDARDS THIS TICKET CHECKS:\n${formatStandards(ticket.standards)}\n` : ""}
 Number of students who submitted: ${submissions.length}
 
 QUESTIONS:

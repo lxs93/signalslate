@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { ClassPeriod } from "@/generated/prisma/client";
+import { ticketStandardsInclude } from "@/lib/tickets";
+import { frameworkLabel } from "@/lib/standards";
+import { summarizeStandardTrends } from "@/lib/standard-trends";
 
 type ThemeRow = { themeName: string; themeType: string; _count: { themeName: number } };
 type FlagRow = {
@@ -33,7 +36,7 @@ export default async function TrendsPage({
     ...(selectedPeriodId ? { periods: { some: { id: selectedPeriodId } } } : {}),
   };
 
-  const [themes, flags] = await Promise.all([
+  const [themes, flags, taggedTickets] = await Promise.all([
     db.analysisTheme.groupBy({
       by: ["themeName", "themeType"],
       _count: { themeName: true },
@@ -52,7 +55,54 @@ export default async function TrendsPage({
       },
       orderBy: { createdAt: "desc" },
     }),
+    db.exitTicket.findMany({
+      where: { ...ticketFilter, standards: { some: {} }, submissions: { some: {} } },
+      select: {
+        id: true,
+        title: true,
+        standards: ticketStandardsInclude,
+        analyses: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            themes: { select: { themeName: true } },
+            _count: { select: { followUpFlags: { where: { resolvedAt: null } } } },
+          },
+        },
+      },
+    }),
   ]);
+
+  // Answers to multiple-choice questions with a marked correct choice, per ticket
+  const markedAnswers = await db.response.findMany({
+    where: {
+      question: { exitTicketId: { in: taggedTickets.map((t) => t.id) }, options: { some: { isCorrect: true } } },
+      selectedOptionId: { not: null },
+    },
+    select: { question: { select: { exitTicketId: true } }, selectedOption: { select: { isCorrect: true } } },
+  });
+  const marks = new Map<string, { correct: number; marked: number }>();
+  for (const r of markedAnswers) {
+    const m = marks.get(r.question.exitTicketId) ?? { correct: 0, marked: 0 };
+    m.marked += 1;
+    if (r.selectedOption?.isCorrect) m.correct += 1;
+    marks.set(r.question.exitTicketId, m);
+  }
+  const standardTrends = summarizeStandardTrends(
+    taggedTickets.map((t) => ({
+      id: t.id,
+      title: t.title,
+      standards: t.standards.map((s) => ({
+        standardId: s.standardId,
+        code: s.code,
+        framework: s.standard?.framework ?? null,
+        description: s.standard?.description ?? null,
+      })),
+      ...(marks.get(t.id) ?? { correct: 0, marked: 0 }),
+      themes: t.analyses[0]?.themes.map((th) => th.themeName) ?? [],
+      openFlags: t.analyses[0]?._count.followUpFlags ?? 0,
+    }))
+  );
 
   // Group flags by student account, falling back to the name for flags
   // that couldn't be linked to an account
@@ -115,7 +165,7 @@ export default async function TrendsPage({
         </div>
       )}
 
-      {themes.length === 0 && flags.length === 0 ? (
+      {themes.length === 0 && flags.length === 0 && standardTrends.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <p className="text-sm text-slate-600 font-medium">No trends yet</p>
@@ -128,6 +178,80 @@ export default async function TrendsPage({
         </Card>
       ) : (
         <div className="space-y-8">
+          {/* Standards, weakest first */}
+          {standardTrends.length > 0 && (
+            <>
+              <section>
+                <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-1">
+                  By Standard
+                </h2>
+                <p className="text-xs text-slate-500 mb-4">
+                  Standards on your answered tickets. Lowest share correct on marked multiple-choice questions first.
+                </p>
+                <div className="space-y-2">
+                  {standardTrends.map((row) => (
+                    <div key={row.key} className="bg-white border border-slate-200 rounded-lg px-4 py-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-sm">
+                            <span className="text-[0.6875rem] font-medium uppercase tracking-wide text-slate-500 mr-1.5">
+                              {row.framework ? frameworkLabel(row.framework) : "Custom"}
+                            </span>
+                            <span className="font-mono text-xs font-medium text-slate-900">{row.code}</span>
+                          </p>
+                          {row.description && (
+                            <p className="text-xs text-slate-600 mt-0.5 line-clamp-2">{row.description}</p>
+                          )}
+                        </div>
+                        <div className="shrink-0 text-right">
+                          {row.percentCorrect !== null ? (
+                            <p className="text-sm font-semibold text-slate-900">
+                              {row.percentCorrect}% <span className="font-normal text-slate-500">correct</span>
+                            </p>
+                          ) : (
+                            <p className="text-xs text-slate-400">No marked questions</p>
+                          )}
+                          {row.openFlags > 0 && (
+                            <p className="text-xs text-amber-700 mt-0.5">
+                              {row.openFlags} to check in with
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {row.percentCorrect !== null && (
+                        <div className="mt-2 h-1.5 rounded-full bg-slate-100" aria-hidden="true">
+                          <div
+                            className={`h-1.5 rounded-full ${row.percentCorrect < 70 ? "bg-amber-400" : "bg-emerald-500"}`}
+                            style={{ width: `${row.percentCorrect}%` }}
+                          />
+                        </div>
+                      )}
+                      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <span>
+                          {row.tickets.map((t, i) => (
+                            <span key={t.id}>
+                              {i > 0 && ", "}
+                              <a href={`/tickets/${t.id}`} className="text-slate-700 hover:underline">
+                                {t.title}
+                              </a>
+                            </span>
+                          ))}
+                        </span>
+                        {row.topThemes.map((theme) => (
+                          <Badge key={theme} variant="secondary" className="text-xs">
+                            {theme}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <Separator />
+            </>
+          )}
+
           {/* Recurring misconception themes */}
           <section>
             <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-4">

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { analyzeExitTicket } from "@/lib/openai";
 import { Prisma } from "@/generated/prisma/client";
 import { matchStudentId } from "@/lib/match-student";
+import { ticketStandardsInclude } from "@/lib/tickets";
 
 export async function GET(
   _req: NextRequest,
@@ -47,6 +48,7 @@ export async function POST(
   const ticket = await db.exitTicket.findUnique({
     where: { id },
     include: {
+      standards: ticketStandardsInclude,
       questions: {
         orderBy: { orderIndex: "asc" },
         include: { options: { orderBy: { orderIndex: "asc" } } },
@@ -71,7 +73,12 @@ export async function POST(
   }
 
   try {
-    const result = await analyzeExitTicket(ticket, ticket.submissions);
+    const standards = ticket.standards.map((s) => ({
+      code: s.code,
+      framework: s.standard?.framework,
+      description: s.standard?.description,
+    }));
+    const result = await analyzeExitTicket({ ...ticket, standards }, ticket.submissions);
 
     const analysis = await db.$transaction(async (tx: Prisma.TransactionClient) => {
       const created = await tx.analysis.create({

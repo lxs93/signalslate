@@ -3,9 +3,10 @@ import {
   ANALYSIS_SYSTEM_PROMPT,
   ANALYSIS_JSON_SCHEMA,
   buildAnalysisPrompt,
+  type TicketContext,
 } from "@/lib/prompt";
 import type { AnalysisResult } from "@/types";
-import type { QuestionWithOptions, SubmissionWithResponses } from "@/types";
+import type { SubmissionWithResponses } from "@/types";
 
 const globalForOpenAI = globalThis as unknown as { openai: OpenAI };
 
@@ -14,13 +15,6 @@ export const openai =
   new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 if (process.env.NODE_ENV !== "production") globalForOpenAI.openai = openai;
-
-interface TicketContext {
-  title: string;
-  subject: string;
-  lessonTopic: string;
-  questions: QuestionWithOptions[];
-}
 
 export async function analyzeExitTicket(
   ticket: TicketContext,
