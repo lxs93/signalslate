@@ -75,6 +75,8 @@ model ExitTicket {
   lessonTopic String        @map("lesson_topic")
   standard    String?       @map("standard")
   isOpen      Boolean       @default(true) @map("is_open")
+  /// Students see the multiple-choice answer key once the ticket is closed.
+  revealAnswers Boolean     @default(false) @map("reveal_answers")
   createdAt   DateTime      @default(now()) @map("created_at")
   user        User          @relation(fields: [userId], references: [id])
   periods     ClassPeriod[]

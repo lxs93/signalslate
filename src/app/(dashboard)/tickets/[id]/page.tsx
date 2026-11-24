@@ -129,6 +129,9 @@ export default async function TicketDetailPage({
         submissionCount={ticket._count.submissions}
         hasNewSubmissions={hasNewSubmissions}
         hasAnalysis={!!latestAnalysis}
+        revealAnswers={
+          ticket.questions.some((q) => q.options.some((o) => o.isCorrect)) ? ticket.revealAnswers : null
+        }
       />
 
       <Separator className="my-8" />

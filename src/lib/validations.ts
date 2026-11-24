@@ -47,6 +47,7 @@ export const createTicketSchema = ticketDetailsSchema.extend({
 
 export const updateTicketSchema = ticketDetailsSchema.partial().extend({
   questions: ticketQuestionsSchema.optional(),
+  revealAnswers: z.boolean().optional(),
 });
 
 export const studentSubmissionSchema = z.object({

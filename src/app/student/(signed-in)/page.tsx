@@ -73,7 +73,13 @@ export default async function StudentHomePage() {
                         {t.submissions[0].submittedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </p>
                     </div>
-                    <span className="text-xs text-slate-500">View answers →</span>
+                    <span className="text-xs text-slate-500 shrink-0 ml-3">
+                      {t.revealAnswers && !t.isOpen ? (
+                        <span className="text-emerald-700 font-medium">See correct answers →</span>
+                      ) : (
+                        "View answers →"
+                      )}
+                    </span>
                   </CardContent>
                 </Card>
               </Link>

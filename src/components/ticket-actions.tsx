@@ -11,6 +11,8 @@ interface TicketActionsProps {
   submissionCount: number;
   hasNewSubmissions: boolean;
   hasAnalysis: boolean;
+  /** Null when the ticket has no multiple-choice answer key to reveal. */
+  revealAnswers: boolean | null;
 }
 
 export function TicketActions({
@@ -19,6 +21,7 @@ export function TicketActions({
   submissionCount,
   hasNewSubmissions,
   hasAnalysis,
+  revealAnswers,
 }: TicketActionsProps) {
   const router = useRouter();
   const [analyzing, setAnalyzing] = useState(false);
@@ -48,6 +51,20 @@ export function TicketActions({
     setToggling(true);
     try {
       await fetch(`/api/tickets/${ticketId}/close`, { method: "POST" });
+      router.refresh();
+    } finally {
+      setToggling(false);
+    }
+  }
+
+  async function handleRevealChange(reveal: boolean) {
+    setToggling(true);
+    try {
+      await fetch(`/api/tickets/${ticketId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ revealAnswers: reveal }),
+      });
       router.refresh();
     } finally {
       setToggling(false);
@@ -93,6 +110,28 @@ export function TicketActions({
           {toggling ? "Updating…" : isOpen ? "Close submissions" : "Reopen submissions"}
         </Button>
       </div>
+
+      {revealAnswers !== null && (
+        <label className="flex items-start gap-2 text-sm text-slate-700 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={revealAnswers}
+            disabled={toggling}
+            onChange={(e) => handleRevealChange(e.target.checked)}
+            className="mt-0.5 rounded"
+          />
+          <span>
+            Show students the correct answers after submissions close
+            {revealAnswers && (
+              <span className="block text-xs text-slate-500">
+                {isOpen
+                  ? "Students will see them once you close submissions."
+                  : "Students can see them now on their submitted answers."}
+              </span>
+            )}
+          </span>
+        </label>
+      )}
 
       {error && (
         <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">{error}</p>

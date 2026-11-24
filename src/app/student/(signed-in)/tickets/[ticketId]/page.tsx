@@ -16,7 +16,12 @@ export default async function StudentAnswersPage({
     where: { exitTicketId_studentId: { exitTicketId: ticketId, studentId } },
     include: {
       exitTicket: {
-        include: { questions: { orderBy: { orderIndex: "asc" } } },
+        include: {
+          questions: {
+            orderBy: { orderIndex: "asc" },
+            include: { options: { select: { id: true, optionText: true, isCorrect: true } } },
+          },
+        },
       },
       responses: { include: { selectedOption: { select: { optionText: true } } } },
     },
@@ -29,6 +34,16 @@ export default async function StudentAnswersPage({
   const answerFor = (questionId: string) => {
     const r = submission.responses.find((x) => x.questionId === questionId);
     return r?.selectedOption?.optionText ?? r?.answerText ?? null;
+  };
+
+  // The answer key is only shown once the teacher closes the ticket and turns it on.
+  const showKey = ticket.revealAnswers && !ticket.isOpen;
+  const keyFor = (q: (typeof ticket.questions)[number]) => {
+    if (!showKey || q.questionType !== "MULTIPLE_CHOICE") return null;
+    const correct = q.options.find((o) => o.isCorrect);
+    if (!correct) return null;
+    const picked = submission.responses.find((x) => x.questionId === q.id)?.selectedOptionId;
+    return { correctText: correct.optionText, isRight: picked === correct.id };
   };
 
   return (
@@ -49,9 +64,16 @@ export default async function StudentAnswersPage({
         </p>
       </div>
 
+      {ticket.revealAnswers && ticket.isOpen && (
+        <p className="text-sm text-slate-500 mb-4">
+          Your teacher will show the correct answers after this ticket closes.
+        </p>
+      )}
+
       <div className="space-y-4">
         {ticket.questions.map((q, i) => {
           const answer = answerFor(q.id);
+          const key = keyFor(q);
           return (
             <Card key={q.id} className="border-slate-200">
               <CardHeader className="pb-2">
@@ -64,6 +86,13 @@ export default async function StudentAnswersPage({
                   <p className="text-sm text-slate-700 whitespace-pre-wrap">{answer}</p>
                 ) : (
                   <p className="text-sm text-slate-400 italic">No answer</p>
+                )}
+                {key && (
+                  <p
+                    className={`mt-2 text-sm font-medium ${key.isRight ? "text-emerald-700" : "text-amber-700"}`}
+                  >
+                    {key.isRight ? "✓ Correct" : `Correct answer: ${key.correctText}`}
+                  </p>
                 )}
               </CardContent>
             </Card>
