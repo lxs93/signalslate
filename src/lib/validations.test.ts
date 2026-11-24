@@ -173,3 +173,13 @@ describe("registerSchema password", () => {
     expect(reg("é".repeat(37))).toBe(false); // 74 bytes
   });
 });
+
+describe("registerSchema name", () => {
+  const reg = (name: string) => registerSchema.safeParse({ name, email: "ana@school.org", password: "12345678" });
+
+  it("trims names and needs real text", () => {
+    expect(reg("  Ms. Rivera ").data?.name).toBe("Ms. Rivera");
+    expect(reg("   ").success).toBe(false);
+    expect(reg("x".repeat(81)).success).toBe(false);
+  });
+});

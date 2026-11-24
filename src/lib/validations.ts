@@ -6,7 +6,8 @@ export function normalizeEmail(email: string): string {
 }
 
 export const registerSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  // Students see this when they pick their class, e.g. "Ms. Rivera"
+  name: z.string().trim().min(1, "Name is required").max(80, "Name can be up to 80 characters"),
   email: z.string().transform(normalizeEmail).pipe(z.email("Invalid email address")),
   password: z
     .string()
