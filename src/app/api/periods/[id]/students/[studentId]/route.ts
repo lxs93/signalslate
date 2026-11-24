@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { getTeacherId } from "@/lib/session";
 
@@ -15,6 +16,11 @@ export async function DELETE(
 
   const period = await db.classPeriod.findUnique({ where: { id } });
   if (!period || period.userId !== teacherId) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Student ids are UUIDs; anything else can't be enrolled (and would make Postgres throw)
+  if (!z.uuid().safeParse(studentId).success) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
