@@ -7,7 +7,7 @@ export default async function RootPage() {
     redirect("/student");
   }
   if (session?.user?.id) {
-    redirect("/dashboard");
+    redirect("/trends");
   }
   redirect("/login");
 }

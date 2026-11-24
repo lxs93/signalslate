@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: lanAddresses,
   // A stray lockfile higher up (~/Desktop) makes Next guess the wrong root
   turbopack: { root: process.cwd() },
+  // Keep the Next.js dev badge clear of the sidebar's Sign out link
+  devIndicators: { position: "bottom-right" },
 };
 
 export default nextConfig;
