@@ -71,6 +71,9 @@ export function TicketActions({
         <Button variant="outline" size="sm" asChild>
           <Link href={`/tickets/${ticketId}/edit`}>Edit</Link>
         </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href={`/tickets/new?from=${ticketId}`}>Duplicate</Link>
+        </Button>
         <Button variant="outline" size="sm" onClick={handleCopyLink}>
           {copied ? "Copied!" : "Copy student link"}
         </Button>
