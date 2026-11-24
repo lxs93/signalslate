@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { AnalysisPanel } from "@/components/analysis-panel";
+import { LiveRefresh } from "@/components/live-refresh";
 import { TicketActions } from "@/components/ticket-actions";
 import { PeriodSelector } from "@/components/period-selector";
 import { DeleteTicketButton } from "@/components/delete-ticket-button";
@@ -140,6 +141,15 @@ export default async function TicketDetailPage({
           />
         )}
       </div>
+
+      {(ticket.isOpen || notSubmitted.length > 0) && ticket.periods.length > 0 && (
+        <SubmissionProgress
+          submitted={ticket._count.submissions}
+          expected={ticket._count.submissions + notSubmitted.length}
+          live={ticket.isOpen}
+        />
+      )}
+      {ticket.isOpen && <LiveRefresh />}
 
       <TicketActions
         ticketId={ticket.id}
@@ -296,6 +306,33 @@ export default async function TicketDetailPage({
           title={ticket.title}
           submissionCount={ticket._count.submissions}
         />
+      </div>
+    </div>
+  );
+}
+
+/** "8 of 12 students in", with a bar. */
+function SubmissionProgress({ submitted, expected, live }: { submitted: number; expected: number; live: boolean }) {
+  const percent = expected ? Math.min(100, Math.round((submitted / expected) * 100)) : 0;
+  return (
+    <div className="mb-6 rounded-lg border border-slate-200 bg-white px-4 py-3">
+      <div className="flex items-baseline justify-between gap-4">
+        <p className="text-sm text-slate-900" aria-live="polite">
+          <span className="text-lg font-semibold tabular-nums">{submitted}</span>
+          <span className="text-slate-500"> of {expected} students in</span>
+        </p>
+        {live && (
+          <span className="flex items-center gap-1.5 text-xs text-slate-500">
+            <span className="relative flex size-2" aria-hidden="true">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60 motion-reduce:animate-none" />
+              <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+            </span>
+            Updating live
+          </span>
+        )}
+      </div>
+      <div className="mt-2 h-1.5 rounded-full bg-slate-100" aria-hidden="true">
+        <div className="h-1.5 rounded-full bg-emerald-500 transition-all" style={{ width: `${percent}%` }} />
       </div>
     </div>
   );
