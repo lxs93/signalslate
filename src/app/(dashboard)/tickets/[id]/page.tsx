@@ -8,6 +8,8 @@ import { AnalysisPanel } from "@/components/analysis-panel";
 import { TicketActions } from "@/components/ticket-actions";
 import { PeriodSelector } from "@/components/period-selector";
 import { DeleteTicketButton } from "@/components/delete-ticket-button";
+import { ChoiceResults } from "@/components/choice-results";
+import { summarizeChoices } from "@/lib/choice-results";
 import type { Question, QuestionOption, Submission } from "@/generated/prisma/client";
 
 export default async function TicketDetailPage({
@@ -63,6 +65,16 @@ export default async function TicketDetailPage({
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     select: { id: true, firstName: true, lastName: true },
   });
+
+  // How many students picked each multiple-choice option
+  const optionCounts = await db.response.groupBy({
+    by: ["selectedOptionId"],
+    where: { question: { exitTicketId: ticket.id }, selectedOptionId: { not: null } },
+    _count: { _all: true },
+  });
+  const countByOption = new Map(
+    optionCounts.map((r) => [r.selectedOptionId as string, r._count._all])
+  );
 
   const latestAnalysis = ticket.analyses[0] ?? null;
   const latestSubmission = ticket.submissions[0] ?? null;
@@ -135,7 +147,10 @@ export default async function TicketDetailPage({
               <p className="text-xs text-slate-500 mt-0.5">
                 {q.questionType === "SHORT_ANSWER" ? "Short answer" : "Multiple choice"}
               </p>
-              {q.questionType === "MULTIPLE_CHOICE" && (
+              {q.questionType === "MULTIPLE_CHOICE" && ticket._count.submissions > 0 && (
+                <ChoiceResults result={summarizeChoices(q.options, countByOption)} />
+              )}
+              {q.questionType === "MULTIPLE_CHOICE" && ticket._count.submissions === 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {q.options.map((opt: QuestionOption) => (
                     <span
