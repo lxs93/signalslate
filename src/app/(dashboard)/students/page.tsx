@@ -6,9 +6,18 @@ import { Card, CardContent } from "@/components/ui/card";
 export default async function StudentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; flags?: string }>;
 }) {
-  const { period: periodFilter } = await searchParams;
+  const { period: periodFilter, flags } = await searchParams;
+  const needsCheckIn = flags === "open";
+  const openFlag = { resolvedAt: null };
+  const href = (period: string | undefined, open: boolean) => {
+    const q = new URLSearchParams();
+    if (period) q.set("period", period);
+    if (open) q.set("flags", "open");
+    const qs = q.toString();
+    return qs ? `/students?${qs}` : "/students";
+  };
   const session = await auth();
   const userId = session!.user!.id!;
 
@@ -18,12 +27,13 @@ export default async function StudentsPage({
       where: {
         teacherId: userId,
         ...(periodFilter ? { enrollments: { some: { periodId: periodFilter } } } : {}),
+        ...(needsCheckIn ? { flags: { some: openFlag } } : {}),
       },
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
       include: {
         enrollments: { include: { period: { select: { name: true } } } },
         submissions: { select: { submittedAt: true }, orderBy: { submittedAt: "desc" } },
-        _count: { select: { flags: true } },
+        _count: { select: { flags: { where: openFlag } } },
       },
     }),
   ]);
@@ -42,20 +52,35 @@ export default async function StudentsPage({
         </p>
       </div>
 
-      {periods.length > 1 && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          <Link href="/students" className={tab(!periodFilter)}>
-            All
-          </Link>
-          {periods.map((p) => (
-            <Link key={p.id} href={`/students?period=${p.id}`} className={tab(periodFilter === p.id)}>
-              {p.name}
+      <div className="flex flex-wrap items-center gap-1.5 mb-4">
+        {periods.length > 1 && (
+          <>
+            <Link href={href(undefined, needsCheckIn)} className={tab(!periodFilter)}>
+              All
             </Link>
-          ))}
-        </div>
-      )}
+            {periods.map((p) => (
+              <Link key={p.id} href={href(p.id, needsCheckIn)} className={tab(periodFilter === p.id)}>
+                {p.name}
+              </Link>
+            ))}
+            <span className="w-px h-5 bg-slate-200 mx-1" />
+          </>
+        )}
+        <Link href={href(periodFilter, !needsCheckIn)} className={tab(needsCheckIn)}>
+          Needs check-in
+        </Link>
+      </div>
 
-      {students.length === 0 ? (
+      {students.length === 0 && needsCheckIn ? (
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <p className="text-slate-600 font-medium">No open flags</p>
+            <p className="text-sm text-slate-500 mt-1">
+              You&apos;ve checked in with every flagged student{periodFilter ? " in this section" : ""}.
+            </p>
+          </CardContent>
+        </Card>
+      ) : students.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <p className="text-slate-600 font-medium">No students yet</p>
@@ -74,7 +99,7 @@ export default async function StudentsPage({
             <span>Name</span>
             <span>Sections</span>
             <span className="text-right">Answered</span>
-            <span className="text-right">Flags</span>
+            <span className="text-right">Open flags</span>
             <span className="text-right">Last answer</span>
           </div>
           {students.map((s) => {
@@ -96,7 +121,7 @@ export default async function StudentsPage({
                   {sections} · {s.submissions.length} answered
                   {s._count.flags > 0 && (
                     <span className="text-amber-600 font-medium">
-                      {" "}· {s._count.flags} flag{s._count.flags !== 1 ? "s" : ""}
+                      {" "}· {s._count.flags} open flag{s._count.flags !== 1 ? "s" : ""}
                     </span>
                   )}
                 </span>

@@ -251,6 +251,8 @@ model FollowUpFlag {
   studentName String   @map("student_name")
   reason      String   @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
+  /// Set when the teacher has checked in with the student.
+  resolvedAt  DateTime? @map("resolved_at")
   analysis    Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
   student     Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
 

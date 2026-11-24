@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteStudentButton } from "@/components/delete-student-button";
+import { FlagCheckInButton } from "@/components/flag-check-in-button";
 
 const shortDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
@@ -51,6 +52,8 @@ export default async function StudentDetailPage({
   }
 
   const fullName = `${student.firstName} ${student.lastName}`.trim();
+  const openFlags = student.flags.filter((f) => !f.resolvedAt);
+  const checkedInFlags = student.flags.filter((f) => f.resolvedAt);
   const periodIds = student.enrollments.map((e) => e.periodId);
   const submittedIds = student.submissions.map((s) => s.exitTicketId);
   const missing = await db.exitTicket.findMany({
@@ -95,7 +98,7 @@ export default async function StudentDetailPage({
         {[
           ["Answered", student.submissions.length],
           ["Not answered", missing.length],
-          ["Follow-up flags", student.flags.length],
+          ["Open flags", openFlags.length],
         ].map(([label, value]) => (
           <Card key={label as string}>
             <CardContent className="py-3 px-4">
@@ -111,19 +114,54 @@ export default async function StudentDetailPage({
           <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
             Check in about
           </h2>
+          {openFlags.length === 0 && (
+            <p className="text-sm text-slate-500 mb-2">You&apos;ve checked in on every flag.</p>
+          )}
           <div className="space-y-2">
-            {student.flags.map((f) => (
-              <div key={f.id} className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
-                <p className="text-sm text-slate-800">{f.reason}</p>
-                <Link
-                  href={`/tickets/${f.analysis.exitTicket.id}`}
-                  className="text-xs text-slate-500 hover:underline"
-                >
-                  {f.analysis.exitTicket.title} · {shortDate(f.createdAt)}
-                </Link>
+            {openFlags.map((f) => (
+              <div
+                key={f.id}
+                className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-start gap-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm text-slate-800">{f.reason}</p>
+                  <Link
+                    href={`/tickets/${f.analysis.exitTicket.id}`}
+                    className="text-xs text-slate-500 hover:underline"
+                  >
+                    {f.analysis.exitTicket.title} · {shortDate(f.createdAt)}
+                  </Link>
+                </div>
+                <FlagCheckInButton flagId={f.id} resolved={false} />
               </div>
             ))}
           </div>
+          {checkedInFlags.length > 0 && (
+            <details className="mt-3 group">
+              <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-800">
+                Checked in ({checkedInFlags.length})
+              </summary>
+              <div className="space-y-2 mt-2">
+                {checkedInFlags.map((f) => (
+                  <div
+                    key={f.id}
+                    className="bg-white border border-slate-200 rounded-lg px-4 py-2.5 flex items-start gap-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-slate-600">{f.reason}</p>
+                      <Link
+                        href={`/tickets/${f.analysis.exitTicket.id}`}
+                        className="text-xs text-slate-500 hover:underline"
+                      >
+                        {f.analysis.exitTicket.title} · checked in {shortDate(f.resolvedAt!)}
+                      </Link>
+                    </div>
+                    <FlagCheckInButton flagId={f.id} resolved />
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
         </section>
       )}
 

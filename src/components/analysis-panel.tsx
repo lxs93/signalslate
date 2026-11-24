@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import type { AnalysisWithDetails } from "@/types";
+import { FlagCheckInButton } from "@/components/flag-check-in-button";
 
 interface AnalysisPanelProps {
   analysis: AnalysisWithDetails;
@@ -79,12 +80,12 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {analysis.followUpFlags.map((flag, i) => (
-                <div key={i} className="flex gap-3">
+              {analysis.followUpFlags.map((flag) => (
+                <div key={flag.id} className={`flex gap-3 ${flag.resolvedAt ? "opacity-60" : ""}`}>
                   <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-medium text-slate-600 shrink-0">
                     {flag.studentName.charAt(0).toUpperCase()}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-slate-900">
                       {flag.studentId ? (
                         <Link href={`/students/${flag.studentId}`} className="hover:underline">
@@ -95,6 +96,9 @@ export function AnalysisPanel({ analysis }: AnalysisPanelProps) {
                       )}
                     </p>
                     <p className="text-xs text-slate-600 mt-0.5">{flag.reason}</p>
+                  </div>
+                  <div className="ml-auto pl-2">
+                    <FlagCheckInButton flagId={flag.id} resolved={!!flag.resolvedAt} />
                   </div>
                 </div>
               ))}

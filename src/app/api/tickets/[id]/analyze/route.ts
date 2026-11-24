@@ -97,15 +97,29 @@ export async function POST(
         });
       }
 
-      // Save follow-up flags
+      // Save follow-up flags. A student the teacher already checked in with
+      // about this ticket stays checked in when an earlier run flagged them too.
       if (result.students_to_check_in_with.length > 0) {
+        const checkedIn = await tx.followUpFlag.findMany({
+          where: { analysis: { exitTicketId: id }, resolvedAt: { not: null } },
+          select: { studentId: true, studentName: true, resolvedAt: true },
+        });
+        const resolvedFor = (studentId: string | null, name: string) =>
+          checkedIn.find((f) =>
+            studentId ? f.studentId === studentId : !f.studentId && f.studentName === name
+          )?.resolvedAt ?? null;
+
         await tx.followUpFlag.createMany({
-          data: result.students_to_check_in_with.map((s) => ({
-            analysisId: created.id,
-            studentId: matchStudentId(s.student_name, ticket.submissions),
-            studentName: s.student_name,
-            reason: s.reason,
-          })),
+          data: result.students_to_check_in_with.map((s) => {
+            const studentId = matchStudentId(s.student_name, ticket.submissions);
+            return {
+              analysisId: created.id,
+              studentId,
+              studentName: s.student_name,
+              reason: s.reason,
+              resolvedAt: resolvedFor(studentId, s.student_name),
+            };
+          }),
         });
       }
 
