@@ -8,7 +8,11 @@ export function normalizeEmail(email: string): string {
 export const registerSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().transform(normalizeEmail).pipe(z.email("Invalid email address")),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    // bcrypt only reads the first 72 bytes, so anything longer would match passwords it shouldn't
+    .refine((p) => new TextEncoder().encode(p).length <= 72, "Password can be up to 72 characters"),
 });
 
 export const loginSchema = z.object({

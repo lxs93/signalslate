@@ -158,3 +158,18 @@ describe("registerSchema email", () => {
     expect(registerSchema.safeParse({ name: "Ana", email: "ana at school", password: "12345678" }).success).toBe(false);
   });
 });
+
+describe("registerSchema password", () => {
+  const reg = (password: string) => registerSchema.safeParse({ name: "Ana", email: "ana@school.org", password }).success;
+
+  it("allows 8 to 72 bytes", () => {
+    expect(reg("x".repeat(8))).toBe(true);
+    expect(reg("x".repeat(72))).toBe(true);
+    expect(reg("x".repeat(7))).toBe(false);
+  });
+
+  it("rejects passwords bcrypt would cut short, counting bytes", () => {
+    expect(reg("x".repeat(73))).toBe(false);
+    expect(reg("é".repeat(37))).toBe(false); // 74 bytes
+  });
+});
