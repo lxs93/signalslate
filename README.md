@@ -71,6 +71,14 @@ Open [http://localhost:3000](http://localhost:3000)
 - **Export CSV** gives one row per student, including students who haven't submitted, with a score for marked multiple-choice questions
 - Tag a ticket with up to 6 standards. Search Common Core, NGSS and California standards by code (long forms like `CCSS.MATH.CONTENT.6.RP.A.1` work) or by words, filter by framework and grade, or add a custom code such as a district objective. Standards data: `data/standards` (ASN, © D2L Corporation, CC BY 3.0 US)
 - Turn on **Show students the correct answers** to let students see the answer key on their submitted answers once the ticket is closed
+- **Live count** while a ticket is open ("8 of 12 students in"); the page refreshes itself every 10 seconds
+- **Close automatically at** a set time; closing or reopening by hand clears it
+- Tickets taught in **several periods** get period tabs, and each marked multiple-choice question shows % correct by period
+- **Read answers by question**: every short answer side by side, and multiple-choice answers grouped by the choice picked
+- **How sure are you?** (on by default for new tickets): students rate 1–4; the ticket shows who was confident but wrong, and the analysis is told each student's confidence
+- **Notes to students**: write a short note on any submission (with previous/next student links); the student sees it with their answers
+- The analysis gets the ticket's standards, and its suggested follow-up question has **Use as next ticket**, which starts a new draft with the same details
+- **Trends → By Standard**: each standard on answered tickets with % correct, open check-ins, and recurring themes, weakest first
 
 ## Student accounts
 
