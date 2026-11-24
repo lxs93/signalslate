@@ -1,3 +1,5 @@
+import { compareNames } from "@/lib/names";
+
 /** The four answers to "How sure are you about your answers?" */
 export const CONFIDENCE_LEVELS = [
   { value: 1, label: "Not sure" },
@@ -38,6 +40,6 @@ export function summarizeConfidence(rows: ConfidenceInput[]): ConfidenceSummary 
     answered: rated.length,
     confidentButWrong: rated
       .filter((r) => r.confidence! >= 3 && r.wrong > 0)
-      .sort((a, b) => b.confidence! - a.confidence! || b.wrong - a.wrong || a.studentName.localeCompare(b.studentName)),
+      .sort((a, b) => b.confidence! - a.confidence! || b.wrong - a.wrong || compareNames(a.studentName, b.studentName)),
   };
 }

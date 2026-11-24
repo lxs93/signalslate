@@ -127,6 +127,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                   disabled={qIndex === 0}
                   className="px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 disabled:opacity-30 text-xs"
                   title="Move up"
+                  aria-label={`Move question ${qIndex + 1} up`}
                 >
                   ↑
                 </button>
@@ -136,6 +137,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                   disabled={qIndex === questions.length - 1}
                   className="px-1.5 py-1 rounded text-slate-500 hover:text-slate-700 disabled:opacity-30 text-xs"
                   title="Move down"
+                  aria-label={`Move question ${qIndex + 1} down`}
                 >
                   ↓
                 </button>
@@ -144,6 +146,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                   onClick={() => removeQuestion(qIndex)}
                   className="px-1.5 py-1 rounded text-slate-500 hover:text-red-500 text-xs ml-1"
                   title="Remove question"
+                  aria-label={`Remove question ${qIndex + 1}`}
                 >
                   ✕
                 </button>
@@ -164,13 +167,14 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label>Type</Label>
-              <div className="flex gap-2">
+              <p id={`question-${qIndex}-type`} className="text-sm font-medium leading-none">Type</p>
+              <div className="flex gap-2" role="group" aria-labelledby={`question-${qIndex}-type`}>
                 {(["SHORT_ANSWER", "MULTIPLE_CHOICE"] as const).map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => updateQuestion(qIndex, { questionType: type })}
+                    aria-pressed={q.questionType === type}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                       q.questionType === type
                         ? "bg-slate-600 text-white border-slate-600"
@@ -185,7 +189,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
 
             {q.questionType === "MULTIPLE_CHOICE" && (
               <div className="space-y-2">
-                <Label>Answer options</Label>
+                <p className="text-sm font-medium leading-none">Answer options</p>
                 {q.options.map((opt, oIndex) => (
                   <div key={oIndex} className="flex items-center gap-2">
                     <Input
@@ -194,11 +198,13 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                         updateOption(qIndex, oIndex, { optionText: e.target.value })
                       }
                       placeholder={`Option ${oIndex + 1}`}
+                      aria-label={`Question ${qIndex + 1}, option ${oIndex + 1}`}
                       className="flex-1"
                     />
                     <button
                       type="button"
                       onClick={() => toggleCorrect(qIndex, oIndex)}
+                      aria-pressed={!!opt.isCorrect}
                       title={opt.isCorrect ? "Marked as correct — click to unmark" : "Mark as correct answer"}
                       className={`text-xs px-2 py-1.5 rounded border transition-colors ${
                         opt.isCorrect
@@ -212,6 +218,7 @@ export function QuestionBuilder({ questions, onChange }: QuestionBuilderProps) {
                       <button
                         type="button"
                         onClick={() => removeOption(qIndex, oIndex)}
+                        aria-label={`Remove option ${oIndex + 1}`}
                         className="text-slate-500 hover:text-red-500 text-xs px-1"
                       >
                         ✕

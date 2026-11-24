@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { normalizeJoinCode } from "@/lib/codes";
+import { byFirstName } from "@/lib/names";
 
 /** Look up a class by join code and list its students for the sign-in name picker. */
 export async function GET(
@@ -14,7 +15,6 @@ export async function GET(
       user: { select: { name: true } },
       enrollments: {
         include: { student: { select: { id: true, firstName: true, lastName: true } } },
-        orderBy: [{ student: { firstName: "asc" } }, { student: { lastName: "asc" } }],
       },
     },
   });
@@ -27,7 +27,7 @@ export async function GET(
     joinCode: period.joinCode,
     periodName: period.name,
     teacherName: period.user.name,
-    students: period.enrollments.map(({ student }) => ({
+    students: period.enrollments.map((e) => e.student).sort(byFirstName).map((student) => ({
       id: student.id,
       // First name + last initial is enough to tell students apart in a list
       displayName: student.lastName

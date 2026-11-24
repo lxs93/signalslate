@@ -126,6 +126,7 @@ export default async function TrendsPage({
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
+  const hasTickets = (await db.exitTicket.count({ where: { userId } })) > 0;
   const selectedPeriod = periods.find((p: ClassPeriod) => p.id === selectedPeriodId);
 
   return (
@@ -172,8 +173,16 @@ export default async function TrendsPage({
             <p className="text-xs text-slate-500 mt-1">
               {selectedPeriod
                 ? `No analyzed tickets in ${selectedPeriod.name} yet.`
-                : "Run analysis on at least one exit ticket to start seeing patterns here."}
+                : "Patterns show up here once students answer your exit tickets and you run an analysis."}
             </p>
+            {!selectedPeriod && (
+              <Link
+                href={hasTickets ? "/dashboard" : "/tickets/new"}
+                className="mt-5 inline-flex rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+              >
+                {hasTickets ? "Go to your exit tickets" : "Create your first exit ticket"}
+              </Link>
+            )}
           </CardContent>
         </Card>
       ) : (

@@ -96,6 +96,7 @@ export function PeriodManager({ periods }: PeriodManagerProps) {
                   >
                     <Input
                       autoFocus
+                      aria-label={`New name for ${p.name}`}
                       value={editingName}
                       onChange={(e) => setEditingName(e.target.value)}
                       className="h-7 text-sm"
@@ -144,6 +145,7 @@ export function PeriodManager({ periods }: PeriodManagerProps) {
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="e.g. Period 1 or Math"
+              aria-label="New section name"
               className="h-8 text-sm"
             />
             <Button type="submit" size="sm" disabled={loading || !newName.trim()}>

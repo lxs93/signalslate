@@ -17,6 +17,7 @@ import { ticketStandardsInclude } from "@/lib/tickets";
 import { frameworkLabel } from "@/lib/standards";
 import { correctByPeriod, type PeriodScore } from "@/lib/period-results";
 import type { Question, QuestionOption, Submission } from "@/generated/prisma/client";
+import { byLastName } from "@/lib/names";
 
 export default async function TicketDetailPage({
   params,
@@ -84,7 +85,7 @@ export default async function TicketDetailPage({
   const submittedStudentIds = ticket.submissions
     .map((s: Submission) => s.studentId)
     .filter((x: string | null): x is string => !!x);
-  const notSubmitted = await db.student.findMany({
+  const notSubmitted = (await db.student.findMany({
     where: {
       teacherId: session!.user!.id!,
       enrollments: {
@@ -92,9 +93,8 @@ export default async function TicketDetailPage({
       },
       id: { notIn: submittedStudentIds },
     },
-    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     select: { id: true, firstName: true, lastName: true },
-  });
+  })).sort(byLastName);
 
   // How many students picked each multiple-choice option
   const optionCounts = await db.response.groupBy({
@@ -170,7 +170,7 @@ export default async function TicketDetailPage({
 
       <div className="flex items-start justify-between gap-4 mb-2">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-slate-900 truncate">{ticket.title}</h1>
+          <h1 className="text-2xl font-bold text-slate-900 break-words">{ticket.title}</h1>
           <p className="text-sm text-slate-500 mt-0.5">
             {ticket.subject} · {ticket.lessonTopic}
             {ticket.periods.length > 0 && <> · {ticket.periods.map((p) => p.name).join(", ")}</>}

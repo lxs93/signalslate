@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { toCsv } from "@/lib/csv";
 import { confidenceLabel } from "@/lib/confidence";
+import { byLastName } from "@/lib/names";
 
 /** Downloads a ticket's responses as CSV, one row per student. */
 export async function GET(
@@ -106,9 +107,7 @@ export async function GET(
     rows.push({ last: s.lastName, first: s.firstName, cells: [sectionsOf(s.enrollments), "Not submitted"] });
   }
 
-  rows.sort((a, b) =>
-    (a.last || a.first).localeCompare(b.last || b.first) || a.first.localeCompare(b.first)
-  );
+  rows.sort((a, b) => byLastName({ firstName: a.first, lastName: a.last }, { firstName: b.first, lastName: b.last }));
 
   const csv = toCsv([
     header,

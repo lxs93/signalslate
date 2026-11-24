@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TicketCard, type TicketWithCount } from "@/components/ticket-card";
 import { RosterManager } from "@/components/roster-manager";
+import { byLastName } from "@/lib/names";
 
 export default async function PeriodPage({
   params,
@@ -33,13 +34,10 @@ export default async function PeriodPage({
 
   const tickets = period.exitTickets as TicketWithCount[];
 
-  const byName = (a: { lastName: string; firstName: string }, b: { lastName: string; firstName: string }) =>
-    a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName);
-  const students = period.enrollments.map((e) => e.student).sort(byName);
-  const otherStudents = await db.student.findMany({
-    where: { teacherId: userId, enrollments: { none: { periodId: id } } },
-    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-  });
+  const students = period.enrollments.map((e) => e.student).sort(byLastName);
+  const otherStudents = (
+    await db.student.findMany({ where: { teacherId: userId, enrollments: { none: { periodId: id } } } })
+  ).sort(byLastName);
   const pick = (s: (typeof students)[number]) => ({
     id: s.id,
     firstName: s.firstName,

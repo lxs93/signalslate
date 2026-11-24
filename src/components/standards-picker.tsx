@@ -271,7 +271,7 @@ export function StandardsPicker({ value, onChange, max = 6 }: StandardsPickerPro
                         {option.result.framework} · {option.result.subject} · {gradeLabel(option.result.grade)}
                       </span>
                     </span>
-                    <span className="mt-0.5 line-clamp-2 block text-slate-600">{option.result.description}</span>
+                    <span className="mt-0.5 line-clamp-2 text-slate-600">{option.result.description}</span>
                   </>
                 ) : (
                   <>

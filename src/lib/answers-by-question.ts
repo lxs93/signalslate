@@ -1,3 +1,5 @@
+import { compareNames } from "@/lib/names";
+
 /** One student's answer to one question. */
 export interface AnswerRow {
   submissionId: string;
@@ -20,7 +22,7 @@ export type GroupedAnswers =
       blank: AnswerRow[];
     };
 
-const byName = (a: AnswerRow, b: AnswerRow) => a.studentName.localeCompare(b.studentName);
+const byName = (a: AnswerRow, b: AnswerRow) => compareNames(a.studentName, b.studentName);
 
 /**
  * Lays out every student's answer to one question: short answers in name

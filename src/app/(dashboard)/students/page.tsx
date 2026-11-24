@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
+import { byLastName } from "@/lib/names";
 
 export default async function StudentsPage({
   searchParams,
@@ -29,7 +30,6 @@ export default async function StudentsPage({
         ...(periodFilter ? { enrollments: { some: { periodId: periodFilter } } } : {}),
         ...(needsCheckIn ? { flags: { some: openFlag } } : {}),
       },
-      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
       include: {
         enrollments: { include: { period: { select: { name: true } } } },
         submissions: { select: { submittedAt: true }, orderBy: { submittedAt: "desc" } },
@@ -52,6 +52,7 @@ export default async function StudentsPage({
         </p>
       </div>
 
+      {(students.length > 0 || needsCheckIn || periodFilter) && (
       <div className="flex flex-wrap items-center gap-1.5 mb-4">
         {periods.length > 1 && (
           <>
@@ -70,6 +71,7 @@ export default async function StudentsPage({
           Needs check-in
         </Link>
       </div>
+      )}
 
       {students.length === 0 && needsCheckIn ? (
         <Card className="border-dashed">
@@ -102,7 +104,7 @@ export default async function StudentsPage({
             <span className="text-right">Open flags</span>
             <span className="text-right">Last answer</span>
           </div>
-          {students.map((s) => {
+          {[...students].sort(byLastName).map((s) => {
             const sections = s.enrollments.map((e) => e.period.name).join(", ") || "—";
             const last = s.submissions[0]
               ? s.submissions[0].submittedAt.toLocaleDateString("en-US", { month: "short", day: "numeric" })

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { PrintButton } from "@/components/print-button";
+import { byLastName } from "@/lib/names";
 
 export default async function SignInSheetPage({
   params,
@@ -19,7 +20,6 @@ export default async function SignInSheetPage({
     include: {
       enrollments: {
         include: { student: true },
-        orderBy: [{ student: { lastName: "asc" } }, { student: { firstName: "asc" } }],
       },
     },
   });
@@ -49,7 +49,7 @@ export default async function SignInSheetPage({
       </div>
 
       <div className="grid grid-cols-2 gap-3 print:gap-0">
-        {period.enrollments.map(({ student }) => (
+        {period.enrollments.map((e) => e.student).sort(byLastName).map((student) => (
           <div
             key={student.id}
             className="border border-dashed border-slate-300 rounded-md px-4 py-3 break-inside-avoid print:rounded-none"

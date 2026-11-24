@@ -101,10 +101,11 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
       {adding && (
         <div className="mb-4 bg-slate-50 border border-slate-200 rounded-lg px-4 py-4 space-y-4">
           <form onSubmit={handleAddNames} className="space-y-2">
-            <p className="text-sm text-slate-700">
+            <label htmlFor="roster-names" className="block text-sm text-slate-700">
               Paste or type names, one per line. &ldquo;First Last&rdquo; or &ldquo;Last, First&rdquo;.
-            </p>
+            </label>
             <Textarea
+              id="roster-names"
               value={names}
               onChange={(e) => setNames(e.target.value)}
               rows={5}
@@ -118,9 +119,12 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
 
           {otherStudents.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm text-slate-700">Or add a student from another section</p>
+              <label htmlFor="roster-existing" className="block text-sm text-slate-700">
+                Or add a student from another section
+              </label>
               <div className="flex gap-2">
                 <select
+                  id="roster-existing"
                   value={existingId}
                   onChange={(e) => setExistingId(e.target.value)}
                   className="h-8 flex-1 rounded-md border border-slate-200 bg-white px-2 text-sm"
@@ -158,12 +162,14 @@ export function RosterManager({ periodId, students, otherStudents }: RosterManag
                     value={editFirst}
                     onChange={(e) => setEditFirst(e.target.value)}
                     placeholder="First"
+                    aria-label="First name"
                     className="h-7 text-sm"
                   />
                   <Input
                     value={editLast}
                     onChange={(e) => setEditLast(e.target.value)}
                     placeholder="Last"
+                    aria-label="Last name"
                     className="h-7 text-sm"
                   />
                   <Button type="submit" size="sm" className="h-7 text-xs" disabled={busy || !editFirst.trim()}>
