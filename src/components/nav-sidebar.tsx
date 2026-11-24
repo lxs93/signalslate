@@ -6,10 +6,10 @@ import { signOut } from "next-auth/react";
 import { Separator } from "@/components/ui/separator";
 
 const navItems = [
+  { href: "/trends", label: "Trends", also: [] },
   // Period and ticket pages live under Exit Tickets
   { href: "/dashboard", label: "Exit Tickets", also: ["/periods", "/tickets"] },
   { href: "/students", label: "Students", also: [] },
-  { href: "/trends", label: "Trends", also: [] },
 ];
 
 async function handleSignOut() {
