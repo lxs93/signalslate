@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkStudentNames, createTicketSchema, parseStudentNames, sectionSchema, submissionFeedbackSchema, updateTicketSchema } from "./validations";
+import { checkStudentNames, createTicketSchema, parseStudentNames, sectionSchema, studentSubmissionSchema, submissionFeedbackSchema, updateTicketSchema } from "./validations";
 
 describe("parseStudentNames", () => {
   it("reads First Last, Last, First, and single names", () => {
@@ -132,5 +132,19 @@ describe("ticket text limits", () => {
     const longOption = ticket();
     longOption.questions[1].options![0].optionText = "x".repeat(201);
     expect(createTicketSchema.safeParse(longOption).success).toBe(false);
+  });
+});
+
+describe("studentSubmissionSchema", () => {
+  const answer = (answerText: string) => ({ responses: [{ questionId: "q1", answerText }] });
+
+  it("caps written answers at 2,000 characters", () => {
+    expect(studentSubmissionSchema.safeParse(answer("x".repeat(2000))).success).toBe(true);
+    expect(studentSubmissionSchema.safeParse(answer("x".repeat(2001))).success).toBe(false);
+  });
+
+  it("rejects an unreasonable number of answers", () => {
+    const many = { responses: Array.from({ length: 11 }, (_, i) => ({ questionId: `q${i}`, answerText: "x" })) };
+    expect(studentSubmissionSchema.safeParse(many).success).toBe(false);
   });
 });

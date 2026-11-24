@@ -108,16 +108,25 @@ export const submissionFeedbackSchema = z.object({
     .nullable(),
 });
 
+export const MAX_ANSWER_LENGTH = 2000;
+
 export const studentSubmissionSchema = z.object({
   /** 1 (not sure) to 4 (very sure); required when the ticket asks */
   confidence: z.number().int().min(1).max(4).nullable().optional(),
-  responses: z.array(
-    z.object({
-      questionId: z.string(),
-      answerText: z.string().nullable().optional(),
-      selectedOptionId: z.string().nullable().optional(),
-    })
-  ),
+  responses: z
+    .array(
+      z.object({
+        questionId: z.string(),
+        answerText: z
+          .string()
+          .max(MAX_ANSWER_LENGTH, `Answers can be up to ${MAX_ANSWER_LENGTH} characters`)
+          .nullable()
+          .optional(),
+        selectedOptionId: z.string().nullable().optional(),
+      })
+    )
+    // A ticket has at most 4 questions; leave room for nothing else
+    .max(10, "Too many answers"),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CONFIDENCE_LEVELS } from "@/lib/confidence";
+import { MAX_ANSWER_LENGTH } from "@/lib/validations";
 
 export interface TicketFormData {
   id: string;
@@ -109,6 +110,7 @@ export function ExitTicketForm({ ticket }: { ticket: TicketFormData }) {
                     value={answers[q.id] ?? ""}
                     onChange={(e) => setAnswer(q.id, e.target.value)}
                     placeholder="Write your answer here…"
+                    maxLength={MAX_ANSWER_LENGTH}
                     rows={3}
                   />
                 ) : (
